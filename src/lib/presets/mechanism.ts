@@ -125,18 +125,18 @@ function sketch(p) {
     p.translate(x, y);
     p.scale(1, squash);
     p.noFill();
-    const alpha = ghost ? 70 : 235;
+    const alpha = ghost ? 80 : 252;
     p.stroke(INK[0], INK[1], INK[2], alpha);
-    p.strokeWeight(ghost ? 1.1 : 1.7);
+    p.strokeWeight(ghost ? 1.3 : 2.3);
     wobble(r);
     if (!ghost) {
-      p.strokeWeight(1.2);
+      p.strokeWeight(1.7);
       wobble(r * 0.8);
       wobble(r * 0.26);
       p.stroke(HI[0], HI[1], HI[2], 120);
       wobble(r * 0.52);
-      p.stroke(INK[0], INK[1], INK[2], 220);
-      p.strokeWeight(1.4);
+      p.stroke(INK[0], INK[1], INK[2], 250);
+      p.strokeWeight(2.1);
       const tw = (p.TWO_PI / teeth) * 0.42;
       for (let i = 0; i < teeth; i++) {
         const a = (p.TWO_PI * i) / teeth;
@@ -208,15 +208,15 @@ function sketch(p) {
   function notes() {
     for (let i = 0; i < LEFT_NOTES.length; i++) {
       const y = 1058 + i * 26;
-      letter(620, y, LEFT_NOTES[i][0], 15, INK, 0.9);
-      letter(660, y, LEFT_NOTES[i][1], 15, INK, 0.85);
+      letter(520, y, LEFT_NOTES[i][0], 13, INK, 0.95);
+      letter(552, y, LEFT_NOTES[i][1], 13, INK, 0.9);
     }
     for (let i = 0; i < RIGHT_NOTES.length; i++) {
       const y = 1058 + i * 26;
-      letter(888, y, RIGHT_NOTES[i][0], 15, INK, 0.9);
-      letter(920, y, RIGHT_NOTES[i][1], 15, INK, 0.85);
+      letter(742, y, RIGHT_NOTES[i][0], 13, INK, 0.95);
+      letter(772, y, RIGHT_NOTES[i][1], 13, INK, 0.9);
     }
-    letter(548, 1330, 'TOTAL 33', 15, INK, 0.9);
+    letter(548, 1330, 'TOTAL 33', 15, INK, 0.95);
     p.stroke(INK[0], INK[1], INK[2], 190);
     p.strokeWeight(1.4);
     p.line(546, 1340, 660, 1340);

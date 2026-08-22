@@ -61,10 +61,10 @@ export function SketchCanvas({
       {!code && (
         <div className="w-full h-full flex items-center justify-center text-[12px] text-black/50">
           {status === 'thinking' && 'Querying model…'}
-          {status === 'rendering' && 'Compiling sketch…'}
-          {status === 'error' && 'No sketch'}
-          {status === 'idle' && 'No sketch yet — load a reference or describe one'}
-          {status === 'done' && 'No sketch'}
+          {status === 'rendering' && 'Drawing the page…'}
+          {status === 'error' && 'No page'}
+          {status === 'idle' && 'No page yet — describe one above'}
+          {status === 'done' && 'No page'}
         </div>
       )}
       {errorMessage && (

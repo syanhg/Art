@@ -34,9 +34,9 @@ function sketch(p) {
     graphGrid();
     marginRules();
 
-    label(160, 210, 'THE WALL, DONE   11.05.25', 18, 0.9);
+    label(160, 210, 'THE WALL, DONE   11.05.25', 21, 1);
 
-    for (let i = 0; i < TIMES.length; i++) label(158, 280 + i * 100, TIMES[i], 16, 0.85);
+    for (let i = 0; i < TIMES.length; i++) label(158, 280 + i * 100, TIMES[i], 17, 0.95);
 
     for (let c = 0; c < COLS.length; c++) {
       column(COLS[c].x, COLS[c].w, 250, 1000, c);
@@ -47,7 +47,7 @@ function sketch(p) {
     for (let i = 0; i < NOTES.length; i++) {
       const y = 1122 + i * 27;
       label(150, y, '>', 13, 0.75);
-      label(170, y, NOTES[i], 13, 0.82);
+      label(170, y, NOTES[i], 14, 0.92);
     }
 
     // Recap panel, bottom right: same day, counted a second time.
@@ -145,12 +145,12 @@ function sketch(p) {
 
   function hatch(x, y, w, h) {
     p.strokeCap(p.SQUARE);
-    for (let yy = y; yy < y + h; yy += 2.3) {
+    for (let yy = y; yy < y + h; yy += 1.6) {
       const jitterL = p.random(-2, 5);
       const jitterR = p.random(-16, 3);
       const short = p.random() < 0.16 ? p.random(0.35, 0.8) : 1;
-      p.stroke(INK[0], INK[1], INK[2], p.random(170, 235));
-      p.strokeWeight(p.random(1.1, 1.9));
+      p.stroke(INK[0], INK[1], INK[2], p.random(200, 252));
+      p.strokeWeight(p.random(1.5, 2.7));
       p.line(x + jitterL, yy, x + (w + jitterR) * short, yy + p.random(-0.4, 0.4));
     }
   }
@@ -164,11 +164,11 @@ function sketch(p) {
     p.noStroke();
     const cx = x + w * bias;
     const cy = y + h * p.random(0.35, 0.65);
-    const n = p.floor(w * h * 0.5);
+    const n = p.floor(w * h * 0.85);
     for (let i = 0; i < n; i++) {
-      const gx = p.constrain(p.randomGaussian(cx, w * 0.34), x + 1, x + w - 1);
-      const gy = p.constrain(p.randomGaussian(cy, h * 0.34), y + 1, y + h - 1);
-      p.fill(INK[0], INK[1], INK[2], p.random(60, 210));
+      const gx = p.constrain(p.randomGaussian(cx, w * 0.22), x + 1, x + w - 1);
+      const gy = p.constrain(p.randomGaussian(cy, h * 0.22), y + 1, y + h - 1);
+      p.fill(INK[0], INK[1], INK[2], p.random(90, 240));
       p.rect(gx, gy, p.random() < 0.25 ? 1.6 : 1, 1);
     }
     p.pop();
