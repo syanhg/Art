@@ -12,7 +12,6 @@ import { Icon } from './components/Icon';
 import { buildSystemPrompt, buildUserPrompt } from './lib/prompt';
 import { generateSketch } from './lib/providers';
 import { canvasToPng, type SketchStatus } from './lib/runner';
-import { PRESETS, type Preset } from './sketches';
 
 const APP_NAME = 'p5 Art Generator';
 
@@ -116,10 +115,6 @@ export default function App() {
     }
   }
 
-  function loadPreset(preset: Preset) {
-    show({ title: preset.title, description: preset.description, sketchCode: preset.sketchCode });
-  }
-
   function handleSketchError(message: string) {
     setStatus('error');
     setErrorMessage(message);
@@ -192,10 +187,6 @@ export default function App() {
               { label: 'Copy Sketch Code', onClick: handleCopy, disabled: !result },
               { label: 'Clear Output', onClick: handleClearOutput, disabled: !result },
             ],
-          },
-          {
-            label: 'References',
-            items: PRESETS.map((preset) => ({ label: preset.title, onClick: () => loadPreset(preset) })),
           },
           {
             label: 'Help',
