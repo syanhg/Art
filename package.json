@@ -2,6 +2,13 @@
   "name": "p5-art-generator",
   "private": true,
   "version": "0.0.0",
+  "description": "A Windows 98-styled app that turns a prompt into a hand-drawn-looking p5.js sketch, written by an LLM and run live in the browser.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syanhg/Art.git"
+  },
+  "homepage": "https://github.com/syanhg/Art#readme",
   "type": "module",
   "scripts": {
     "dev": "vite",
