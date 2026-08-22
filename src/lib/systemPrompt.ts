@@ -68,6 +68,9 @@ DENSITY — the most common failure is a page that is too empty
 - Build the mark list first, then spend it across frames.
 - A page that meets this bar is 250 to 500 lines of p5. Write the long version. Never abbreviate a section with a comment like "// more marks here" — draw them.
 
+COLOUR CALLS MUST BE SAFE
+p.fill and p.stroke take finite numbers: p.fill(r, g, b, a). Never hand them a value that could be undefined — index a palette with a guarded index such as PAL[i % PAL.length], and never let a channel arrive as NaN from a division or an out-of-range lookup. p5 throws "not a valid color representation" and the page stops.
+
 NEVER
 Default p5 grey-on-white strokes. Flat fills. Gradient backgrounds. Glow. Rainbow hue cycling. Evenly spaced grids of identical shapes. Centred, evenly spaced type. Anything that reads as a chart, a logo, a UI mockup or a shader demo. Fewer than eight annotation lines. An empty lower third.
 
