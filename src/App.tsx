@@ -9,10 +9,10 @@ import { CodeEditor } from './components/CodeEditor';
 import { SketchCanvas } from './components/SketchCanvas';
 import { ActionButton } from './components/ActionButton';
 import { Icon } from './components/Icon';
-import { buildSystemPrompt, buildUserPrompt } from './lib/systemPrompt';
-import { generateSketch } from './lib/llm';
-import { canvasToPng, type SketchStatus } from './lib/p5runner';
-import { PRESETS, type Preset } from './lib/presets';
+import { buildSystemPrompt, buildUserPrompt } from './lib/prompt';
+import { generateSketch } from './lib/providers';
+import { canvasToPng, type SketchStatus } from './lib/runner';
+import { PRESETS, type Preset } from './sketches';
 
 const APP_NAME = 'p5 Art Generator';
 

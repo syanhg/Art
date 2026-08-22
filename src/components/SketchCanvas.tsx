@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { runSketch, type SketchHandle, type SketchStatus } from '../lib/p5runner';
+import { runSketch, type SketchHandle, type SketchStatus } from '../lib/runner';
 
 export type { SketchStatus };
 

@@ -11,14 +11,22 @@ npm run lint    # oxlint
 
 ## Where things live
 
-| Path | What it is |
-| --- | --- |
-| [src/App.tsx](src/App.tsx) | the whole page: controls, prompt, output panes |
-| [src/components/](src/components/) | the Windows 98 widgets (title bar, menus, group boxes, bevels) |
-| [src/lib/systemPrompt.ts](src/lib/systemPrompt.ts) | the house style: fixed materials, the six-layer page anatomy, the craft rules and the density bar |
-| [src/lib/llm.ts](src/lib/llm.ts) | the three provider calls, each asking for structured JSON |
-| [src/lib/p5runner.ts](src/lib/p5runner.ts) | compiles and mounts the generated sketch, guards it, exports PNG |
-| [src/lib/presets/](src/lib/presets/) | the reference plates that ship with the app |
+```
+src/
+  App.tsx            the whole page: provider, prompt, output panes
+  main.tsx           entry point
+  index.css          Windows 98 chrome — bevels, group boxes, scrollbars
+  types.ts           providers, page size, the shape of a generation
+  components/        the Win98 widgets (title bar, menus, group boxes, buttons)
+  lib/
+    prompt.ts        what the model is told to draw and how
+    providers.ts     the three provider calls, each asking for structured JSON
+    runner.ts        compiles, guards and mounts the generated sketch; PNG export
+  sketches/          the reference plates that ship with the app
+public/icons/        the Win98 icon set
+```
+
+Two rules of thumb: `components/` holds things that render Win98 chrome and nothing else, `lib/` holds everything that talks to a model or to p5. Artwork lives in `sketches/`, never in `lib/`.
 
 ## The sketch contract
 
@@ -33,7 +41,7 @@ Generated and bundled sketches obey the same rules, so anything you can paste in
 
 ## Adding a reference plate
 
-Write it as a `String.raw` template in a new file under [src/lib/presets/](src/lib/presets/), then add an entry to [src/lib/presets/index.ts](src/lib/presets/index.ts) with a title, a one-sentence description of the technique, and its motion. Keep it self-contained and original — plates are the quality bar for the generator, so they should be worth looking at closely.
+Write it as a `String.raw` template in a new file under [src/sketches/](src/sketches/), then add an entry to [src/sketches/index.ts](src/sketches/index.ts) with a title, a one-sentence description of the technique, and its motion. Keep it self-contained and original — plates are the quality bar for the generator, so they should be worth looking at closely.
 
 ## House style
 
