@@ -6,7 +6,6 @@ export type { SketchStatus };
 export function SketchCanvas({
   code,
   runToken,
-  paused,
   status,
   errorMessage,
   onError,
@@ -15,7 +14,6 @@ export function SketchCanvas({
   code: string | null;
   /** Bumped by the host to force a re-run of the same source. */
   runToken: number;
-  paused: boolean;
   status: SketchStatus;
   errorMessage: string | null;
   onError: (message: string) => void;
@@ -52,13 +50,6 @@ export function SketchCanvas({
       onCanvasRef.current(null);
     };
   }, [code, runToken]);
-
-  useEffect(() => {
-    const handle = handleRef.current;
-    if (!handle) return;
-    if (paused) handle.pause();
-    else handle.resume();
-  }, [paused, code, runToken]);
 
   return (
     <div className="win-sunken win-scroll h-full min-h-0 flex flex-col items-center justify-center p-2">

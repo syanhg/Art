@@ -4,22 +4,33 @@
 
 **Live: [syanhg.github.io/Art](https://syanhg.github.io/Art/)**
 
-A single-page, no-backend app that turns a natural-language prompt into generative art: an LLM writes a p5.js sketch, and that sketch runs for real, live, in your browser.
+A single-page, no-backend app that turns one line of description into a whole hand-drawn page: an LLM writes a p5.js sketch, and that sketch draws the sheet for real, live, in your browser.
 
 The UI is a Windows 98-styled desktop app.
 
 ## How it works
 
-1. You pick a provider and paste your own API key, plus a prompt and four design controls — **style** (how it is drawn), **ink** (what with), **paper** (what on) and **motion**.
+1. You pick a provider, paste your own API key, and say what the page should record. That is the whole interface — the materials are fixed, not chosen.
 2. The app sends your prompt + a hardcoded system prompt + those controls directly to the provider's API from your browser, requesting a structured JSON response: `{ title, description, sketchCode }`.
-3. The returned source is shown read-only in a Monaco editor and executed as an instance-mode p5 sketch (`function sketch(p) { … }`) mounted straight into the page, so animated pieces really animate.
-4. You can copy the sketch, save it as a `.js` file, export the canvas as a PNG, re-run it, pause it, or "Remix."
+3. The returned source is shown read-only in a Monaco editor and executed as an instance-mode p5 sketch (`function sketch(p) { … }`) mounted straight into the page, drawing itself progressively.
+4. You can copy the sketch, save it as a `.js` file, export the page as a PNG, run it again, or "Remix."
 
 Your API key is stored only in `localStorage` and is sent directly to the provider's API (OpenAI / Anthropic / Google).
 
-## Hand-drawn styles
+## The house style
 
-Everything the app makes is aimed at looking made by hand — drawn, hatched, stippled, washed, rubbed, lettered — never at a chart or a shader demo. The style control picks the mark-making: Pencil, Pen & Ink, Ballpoint, Charcoal, Watercolour, Marker, Chalk, Field Notebook. Inks run Graphite, Black Ink, Blue Biro, Red & Blue, Sepia, Faded Colour; papers Graph Paper, Ruled Notebook, Kraft, Newsprint, Plain.
+One fixed set of materials, so every prompt gets the same finish: graphite and black ink on warm off-white paper with heavy tooth, a pale printed grid with dashed section rules and margin numbers, and exactly one accent per page — magenta, vermilion, olive-and-mustard, dusty plum or pale blue.
+
+Every page is a portrait sheet built from six layers, in order:
+
+1. **Ground** — paper, tooth, uneven blotching, an edge shadow
+2. **Ruling** — the printed grid, dashed section rules, margin numbers, a red margin line
+3. **Header** — a hand-lettered title and date, underlined with an overshooting rule
+4. **Body** — the drawing the prompt asks for, made from marks rather than fills
+5. **Annotation** — columns of clipped clerical lines on ruled underlines, some struck through
+6. **Furniture** — page numbers, sheet counts, ink specks, blots, a smudge
+
+The model invents the words too: the title, the date, and eight to sixteen annotation lines in the register of someone recording something they do not intend anyone else to read. Paragraph-length passages are drawn as pseudo-writing — loops that read as handwriting from a distance and dissolve up close.
 
 ## Reference sketches
 

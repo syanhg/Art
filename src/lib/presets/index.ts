@@ -1,4 +1,3 @@
-import type { Motion } from '../../types';
 import { LEDGER } from './ledger';
 import { WASHES } from './washes';
 import { MECHANISM } from './mechanism';
@@ -8,7 +7,6 @@ export interface Preset {
   id: string;
   title: string;
   description: string;
-  motion: Motion;
   sketchCode: string;
 }
 
@@ -23,7 +21,6 @@ export const PRESETS: Preset[] = [
     title: 'The Wall, Done',
     description:
       'A day logged on graph paper: hatched blocks, stippled patches and ink bars against a ruled time column.',
-    motion: 'Still',
     sketchCode: LEDGER,
   },
   {
@@ -31,7 +28,6 @@ export const PRESETS: Preset[] = [
     title: 'Washes Against the Wall',
     description:
       'Gouache cells overprinted in MULTIPLY on a printed engineering grid — checkerboard field, stripe columns, long bars.',
-    motion: 'Still',
     sketchCode: WASHES,
   },
   {
@@ -39,7 +35,6 @@ export const PRESETS: Preset[] = [
     title: 'Skips by the Radiator Pipe',
     description:
       'An exploded gear train in aniline purple with blurred graphite smudges, dashed leaders and a tally of counts.',
-    motion: 'Still',
     sketchCode: MECHANISM,
   },
   {
@@ -47,7 +42,6 @@ export const PRESETS: Preset[] = [
     title: 'Nine Vessels, Stippled',
     description:
       'Solids of revolution built from random easing curves, every slice an ellipse of stroke dots lit from the upper left.',
-    motion: 'Animated',
     sketchCode: VESSELS,
   },
 ];

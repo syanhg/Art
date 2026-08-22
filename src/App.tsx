@@ -1,22 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  INKS,
-  MOTIONS,
-  PAPERS,
-  PROVIDERS,
-  STYLES,
-  type GenerationResult,
-  type Ink,
-  type Motion,
-  type Paper,
-  type Provider,
-  type Style,
-} from './types';
+import { PROVIDERS, type GenerationResult, type Provider } from './types';
 import { TitleBar } from './components/TitleBar';
 import { MenuBar } from './components/MenuBar';
 import { StatusBar } from './components/StatusBar';
 import { GroupBox } from './components/GroupBox';
-import { LabeledSelect } from './components/LabeledSelect';
 import { ApiKeyPanel } from './components/ApiKeyPanel';
 import { CodeEditor } from './components/CodeEditor';
 import { SketchCanvas } from './components/SketchCanvas';
@@ -65,17 +52,11 @@ export default function App() {
   );
 
   const [prompt, setPrompt] = useState('');
-  const [style, setStyle] = useState<Style>('Field Notebook');
-  const [ink, setInk] = useState<Ink>('Graphite');
-  const [paper, setPaper] = useState<Paper>('Graph Paper');
-  const [motion, setMotion] = useState<Motion>('Still');
 
   const [status, setStatus] = useState<SketchStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [result, setResult] = useState<GenerationResult | null>(null);
-  const [resultMotion, setResultMotion] = useState<Motion>('Still');
   const [runToken, setRunToken] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -88,11 +69,9 @@ export default function App() {
     setModel(storedModel ?? PROVIDERS.find((x) => x.id === p)?.defaultModel ?? '');
   }
 
-  function show(generated: GenerationResult, shownAs: Motion) {
+  function show(generated: GenerationResult) {
     setResult(generated);
-    setResultMotion(shownAs);
     setErrorMessage(null);
-    setPaused(false);
     setRunToken((n) => n + 1);
     setStatus('done');
   }
@@ -105,7 +84,7 @@ export default function App() {
     }
     if (!prompt.trim()) {
       setStatus('error');
-      setErrorMessage('Describe the piece you want in the prompt field.');
+      setErrorMessage('Describe what the page should record in the prompt field.');
       return;
     }
 
@@ -115,7 +94,7 @@ export default function App() {
 
     try {
       const systemPrompt = buildSystemPrompt();
-      let userPrompt = buildUserPrompt({ prompt, style, ink, paper, motion });
+      let userPrompt = buildUserPrompt(prompt);
       if (remix) {
         userPrompt +=
           '\n\nThis is a remix request: produce a different variation (different seed, parameters or composition) of the same theme, not the same sketch.';
@@ -130,7 +109,7 @@ export default function App() {
       });
 
       setStatus('rendering');
-      show(generated, motion);
+      show(generated);
     } catch (err) {
       setStatus('error');
       setErrorMessage(err instanceof Error ? err.message : String(err));
@@ -138,10 +117,7 @@ export default function App() {
   }
 
   function loadPreset(preset: Preset) {
-    show(
-      { title: preset.title, description: preset.description, sketchCode: preset.sketchCode },
-      preset.motion,
-    );
+    show({ title: preset.title, description: preset.description, sketchCode: preset.sketchCode });
   }
 
   function handleSketchError(message: string) {
@@ -183,7 +159,6 @@ export default function App() {
   }
 
   const busy = status === 'thinking' || status === 'rendering';
-  const animated = resultMotion !== 'Still';
 
   const statusText =
     status === 'thinking'
@@ -193,7 +168,7 @@ export default function App() {
         : status === 'error'
           ? (errorMessage ?? 'Error')
           : result
-            ? `${result.title} — running in p5.js${paused ? ' (paused)' : ''}`
+            ? `${result.title} — drawn in p5.js`
             : 'Ready';
 
   return (
@@ -230,27 +205,16 @@ export default function App() {
       />
 
       <div className="flex-1 min-h-0 flex flex-col gap-2 p-2 overflow-hidden">
-        <div className="shrink-0 grid grid-cols-1 md:grid-cols-2 gap-2 items-stretch">
-          <GroupBox label="Model Provider" icon="provider">
-            <ApiKeyPanel
-              provider={providerTyped}
-              onProvider={setProvider}
-              apiKey={apiKey}
-              onApiKey={setApiKey}
-              model={model}
-              onModel={setModel}
-            />
-          </GroupBox>
-
-          <GroupBox label="Design Controls" icon="category">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
-              <LabeledSelect label="Style" options={STYLES} value={style} onChange={setStyle} />
-              <LabeledSelect label="Ink" options={INKS} value={ink} onChange={setInk} />
-              <LabeledSelect label="Paper" options={PAPERS} value={paper} onChange={setPaper} />
-              <LabeledSelect label="Motion" options={MOTIONS} value={motion} onChange={setMotion} />
-            </div>
-          </GroupBox>
-        </div>
+        <GroupBox label="Model Provider" icon="provider" className="shrink-0">
+          <ApiKeyPanel
+            provider={providerTyped}
+            onProvider={setProvider}
+            apiKey={apiKey}
+            onApiKey={setApiKey}
+            model={model}
+            onModel={setModel}
+          />
+        </GroupBox>
 
         <GroupBox label="Prompt" icon="new" className="shrink-0" bodyClassName="flex items-center gap-2">
           <input
@@ -260,7 +224,7 @@ export default function App() {
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !busy) handleGenerate(false);
             }}
-            placeholder="a week of tide readings kept by hand, hatched and annotated"
+            placeholder="every window in the house, counted twice"
             className="win-sunken flex-1 h-[24px] px-2 text-[13px]"
           />
           <ActionButton icon="generate" onClick={() => handleGenerate(false)} disabled={busy}>
@@ -270,7 +234,7 @@ export default function App() {
 
         <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-2">
           <GroupBox
-            label="Generated Sketch"
+            label="Generated Page"
             icon="visualization"
             className="flex-1 min-h-0 flex flex-col basis-1/2"
             bodyClassName="flex-1 min-h-0 flex flex-col gap-2"
@@ -284,7 +248,6 @@ export default function App() {
             <SketchCanvas
               code={result?.sketchCode ?? null}
               runToken={runToken}
-              paused={paused}
               status={status}
               errorMessage={status === 'error' ? errorMessage : null}
               onError={handleSketchError}
@@ -295,9 +258,6 @@ export default function App() {
             <div className="shrink-0 flex flex-wrap gap-2">
               <ActionButton icon="generate" onClick={() => setRunToken((n) => n + 1)} disabled={!result}>
                 Run Again
-              </ActionButton>
-              <ActionButton icon="new" onClick={() => setPaused((v) => !v)} disabled={!result || !animated}>
-                {paused ? 'Resume' : 'Pause'}
               </ActionButton>
               <ActionButton icon="download" onClick={handleDownloadPng} disabled={!result}>
                 Export PNG
@@ -365,8 +325,9 @@ export default function App() {
               <div className="text-[12px] leading-snug">
                 <p className="font-bold mb-1">{APP_NAME}</p>
                 <p>
-                  Describe a piece, pick a drawing style, ink, paper and motion, and GPT / Claude / Gemini writes
-                  a p5.js sketch that draws it live in your browser, by hand.
+                  Describe what a page should record. GPT / Claude / Gemini writes a p5.js sketch that draws the
+                  whole sheet — ruling, hand-lettered title, drawing, annotation column and all — live in your
+                  browser. The materials are fixed: graphite and ink on cream paper, one accent.
                 </p>
               </div>
             </div>

@@ -15,7 +15,7 @@ npm run lint    # oxlint
 | --- | --- |
 | [src/App.tsx](src/App.tsx) | the whole page: controls, prompt, output panes |
 | [src/components/](src/components/) | the Windows 98 widgets (title bar, menus, group boxes, bevels) |
-| [src/lib/systemPrompt.ts](src/lib/systemPrompt.ts) | what the model is told to draw and how |
+| [src/lib/systemPrompt.ts](src/lib/systemPrompt.ts) | the house style: fixed materials, the six-layer page anatomy, the craft rules and the density bar |
 | [src/lib/llm.ts](src/lib/llm.ts) | the three provider calls, each asking for structured JSON |
 | [src/lib/p5runner.ts](src/lib/p5runner.ts) | compiles and mounts the generated sketch, guards it, exports PNG |
 | [src/lib/presets/](src/lib/presets/) | the reference plates that ship with the app |
@@ -29,7 +29,7 @@ Generated and bundled sketches obey the same rules, so anything you can paste in
 - `p.createCanvas(...)` first inside `p.setup`
 - no external resources: no `loadImage`, `loadFont`, `loadShader`, `preload`, no fetch, no addon libraries
 - seed with `p.randomSeed(n)` and `p.noiseSeed(n)` so the piece is reproducible
-- still pieces call `p.noLoop()` when finished; heavy ones draw progressively across frames rather than blocking one
+- pages are portrait `1000 × 1400`, drawn progressively across frames, and call `p.noLoop()` when finished
 
 ## Adding a reference plate
 
@@ -37,4 +37,4 @@ Write it as a `String.raw` template in a new file under [src/lib/presets/](src/l
 
 ## House style
 
-The whole app aims at work that looks made by hand. Marks wobble, pressure varies, tone comes from accumulation rather than flat fills, and the paper is always visible. A patch that makes output look more like a chart and less like a drawing is going the wrong way.
+The materials are deliberately fixed — graphite and ink on cream paper with one accent — so quality does not depend on the user picking well. Marks wobble, pressure varies, tone comes from accumulation rather than flat fills, and the paper is always visible. A patch that adds material choices back, or that makes output look more like a chart and less like a kept document, is going the wrong way.
