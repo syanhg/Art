@@ -50,6 +50,12 @@ function describeRuntimeError(err: unknown, skippedColors: number): string {
   if (/valid color representation/i.test(message)) {
     extra.push('A colour argument was undefined or NaN — usually a palette lookup that missed.');
   }
+  const undefinedName = /ReferenceError: (\w+) is not defined/.exec(message);
+  if (undefinedName) {
+    extra.push(
+      `The sketch used a bare "${undefinedName[1]}". Instance mode has no p5 globals — it has to be "p.${undefinedName[1]}".`,
+    );
+  }
   if (skippedColors > 0) {
     extra.push(`${skippedColors} unusable colour call${skippedColors === 1 ? '' : 's'} were skipped before this.`);
   }
@@ -64,17 +70,21 @@ export function compileSketch(code: string): (p: p5) => void {
     }
   }
 
-  let factory: () => unknown;
+  // The bundled p5 is an ES import, never a window global, so sketches that
+  // reach for a static such as p5.Vector would hit "p5 is not defined". The
+  // constructor is handed in as a parameter instead.
+  let factory: (p5Ctor: typeof p5) => unknown;
   try {
     // eslint-disable-next-line no-new-func
     factory = new Function(
+      'p5',
       `"use strict";\n${code}\n;return typeof sketch === "function" ? sketch : null;`,
-    ) as () => unknown;
+    ) as (p5Ctor: typeof p5) => unknown;
   } catch (err) {
     throw new Error(`The generated sketch has a syntax error. ${describeError(err)}`);
   }
 
-  const fn = factory();
+  const fn = factory(p5);
   if (typeof fn !== 'function') {
     throw new Error('The generated code did not define a function named "sketch".');
   }
