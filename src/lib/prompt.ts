@@ -1,4 +1,5 @@
 import { PAGE_HEIGHT, PAGE_WIDTH } from '../types';
+import type { Style } from './styles';
 
 export const RESPONSE_SCHEMA_DESCRIPTION =
   'a JSON object with exactly three string fields: "title" (the hand-lettered title you put on the page), ' +
@@ -110,11 +111,17 @@ BEFORE YOU EMIT, CHECK
 - Does every call go through p., and does the sketch call p.noLoop() when finished?`;
 }
 
-export function buildUserPrompt(prompt: string): string {
+export function buildUserPrompt(prompt: string, style?: Style): string {
+  const form = style?.directive
+    ? `\n\nFORM\n${style.directive}\nThis form is fixed for this page. Fit the subject to it rather than the other way round — the record still has to be about the subject, with its nouns, counts and vocabulary on the sheet.`
+    : '';
+
   return `SUBJECT
 "${prompt}"
 
 Read this subject first, the way the system prompt describes: what is being recorded, who keeps the page, what form the record takes, which marks and pigments that implies, and what the words say. Put those decisions in the comment block at the head of the sketch.
+
+${form}
 
 Then draw that page. Every noun and every number in the subject has to be findable on the sheet — drawn, labelled or counted — and the title, the margin type and the note lines all have to come from this subject's own vocabulary rather than a generic one.
 

@@ -1,16 +1,19 @@
 import Editor from '@monaco-editor/react';
 
-export function CodeEditor({ code }: { code: string }) {
+const PLACEHOLDER = '// The generated p5.js sketch appears here. Edit it and press Run Edits.';
+
+export function CodeEditor({ code, onChange }: { code: string; onChange: (next: string) => void }) {
   return (
     <div className="win-sunken h-full min-h-0">
       <Editor
         height="100%"
         language="javascript"
         theme="light"
-        value={code || '// The generated p5.js sketch will appear here after you click Generate.'}
+        value={code || PLACEHOLDER}
+        onChange={(next) => onChange(next ?? '')}
         options={{
-          readOnly: true,
-          domReadOnly: true,
+          readOnly: code === '',
+          domReadOnly: code === '',
           minimap: { enabled: false },
           fontFamily: 'IBM Plex Mono, JetBrains Mono, SF Mono, Menlo, monospace',
           fontSize: 12,

@@ -10,9 +10,9 @@ import { SketchCanvas } from './components/SketchCanvas';
 import { ActionButton } from './components/ActionButton';
 import { Icon } from './components/Icon';
 import { buildSystemPrompt, buildUserPrompt } from './lib/prompt';
+import { STYLES } from './lib/styles';
 import { generateSketch } from './lib/providers';
 import { canvasToPng, type SketchStatus } from './lib/runner';
-import { PRESETS, type Preset } from './sketches';
 
 const APP_NAME = 'p5 Art Generator';
 
@@ -52,13 +52,19 @@ export default function App() {
   );
 
   const [prompt, setPrompt] = useState('');
+  const [styleId, setStyleId] = useStored('p5:style', 'auto');
+  const style = STYLES.find((s) => s.id === styleId) ?? STYLES[0];
+
+  // The editor holds the page's working source: what came back, plus whatever
+  // has been changed by hand since.
+  const [code, setCode] = useState('');
+  const [elapsed, setElapsed] = useState(0);
 
   const [status, setStatus] = useState<SketchStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [result, setResult] = useState<GenerationResult | null>(null);
   const [runToken, setRunToken] = useState(0);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [presetId, setPresetId] = useState<string | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -72,6 +78,7 @@ export default function App() {
 
   function show(generated: GenerationResult) {
     setResult(generated);
+    setCode(generated.sketchCode);
     setErrorMessage(null);
     setRunToken((n) => n + 1);
     setStatus('done');
@@ -90,13 +97,14 @@ export default function App() {
     }
 
     setErrorMessage(null);
+    setElapsed(0);
     setStatus('thinking');
     setResult(null);
-    setPresetId(null);
+    setCode('');
 
     try {
       const systemPrompt = buildSystemPrompt();
-      let userPrompt = buildUserPrompt(prompt);
+      let userPrompt = buildUserPrompt(prompt, style);
       if (remix) {
         userPrompt +=
           '\n\nThis is a remix request: produce a different variation (different seed, parameters or composition) of the same theme, not the same sketch.';
@@ -125,7 +133,7 @@ export default function App() {
 
   function handleCopy() {
     if (!result) return;
-    navigator.clipboard.writeText(result.sketchCode);
+    navigator.clipboard.writeText(code);
   }
 
   async function handleDownloadPng() {
@@ -140,40 +148,44 @@ export default function App() {
 
   function handleSaveCode() {
     if (!result) return;
-    download(`${slugify(result.title)}.js`, new Blob([result.sketchCode], { type: 'text/javascript' }));
-  }
-
-  function handleShowPreset(preset: Preset) {
-    setPresetId(preset.id);
-    show(preset);
+    download(`${slugify(result.title)}.js`, new Blob([code], { type: 'text/javascript' }));
   }
 
   function handleNew() {
     setPrompt('');
-    setPresetId(null);
     setResult(null);
+    setCode('');
     setStatus('idle');
     setErrorMessage(null);
   }
 
   function handleClearOutput() {
-    setPresetId(null);
     setResult(null);
+    setCode('');
     setStatus('idle');
     setErrorMessage(null);
   }
 
   const busy = status === 'thinking' || status === 'rendering';
+  const edited = result !== null && code !== result.sketchCode;
+
+  // A page takes the model a while. Count it out so the wait reads as work.
+  useEffect(() => {
+    if (status !== 'thinking') return;
+    const started = Date.now();
+    const timer = setInterval(() => setElapsed(Math.round((Date.now() - started) / 1000)), 1000);
+    return () => clearInterval(timer);
+  }, [status]);
 
   const statusText =
     status === 'thinking'
-      ? `Querying ${PROVIDERS.find((p) => p.id === provider)?.label}…`
+      ? `Querying ${PROVIDERS.find((p) => p.id === provider)?.label}… ${elapsed}s`
       : status === 'rendering'
         ? 'Compiling sketch…'
         : status === 'error'
           ? (errorMessage ?? 'Error')
           : result
-            ? `${result.title} — drawn in p5.js`
+            ? `${result.title} — drawn in p5.js${edited ? ', edited' : ''}`
             : 'Ready';
 
   return (
@@ -185,7 +197,7 @@ export default function App() {
             label: 'File',
             items: [
               { label: 'New Prompt', onClick: handleNew },
-              { label: 'Save Sketch As…', onClick: handleSaveCode, disabled: !result },
+              { label: 'Save Sketch As…', onClick: handleSaveCode, disabled: !code },
               { label: 'Export PNG…', onClick: handleDownloadPng, disabled: !result },
               { separator: true, label: '' },
               { label: 'Exit', onClick: () => window.close() },
@@ -194,8 +206,8 @@ export default function App() {
           {
             label: 'Edit',
             items: [
-              { label: 'Copy Sketch Code', onClick: handleCopy, disabled: !result },
-              { label: 'Clear Output', onClick: handleClearOutput, disabled: !result },
+              { label: 'Copy Sketch Code', onClick: handleCopy, disabled: !code },
+              { label: 'Clear Output', onClick: handleClearOutput, disabled: !code },
             ],
           },
           {
@@ -217,44 +229,44 @@ export default function App() {
           />
         </GroupBox>
 
-        <GroupBox label="Prompt" icon="new" className="shrink-0" bodyClassName="flex items-center gap-2">
-          <input
-            type="text"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !busy) handleGenerate(false);
-            }}
-            placeholder="every window in the house, counted twice"
-            className="win-sunken flex-1 h-[24px] px-2 text-[13px]"
-          />
-          <ActionButton icon="generate" onClick={() => handleGenerate(false)} disabled={busy}>
-            {busy ? 'Working…' : 'Generate'}
-          </ActionButton>
-        </GroupBox>
-
-        <GroupBox
-          label="Reference Pages"
-          icon="visualization"
-          className="shrink-0"
-          bodyClassName="flex flex-wrap items-center gap-2"
-        >
-          {PRESETS.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              title={preset.description}
-              onClick={() => handleShowPreset(preset)}
-              className={`${presetId === preset.id ? 'win-sunken' : 'win-raised'} h-[22px] px-2 text-[11px]`}
-            >
-              {preset.title}
-            </button>
-          ))}
+        <GroupBox label="Prompt" icon="new" className="shrink-0" bodyClassName="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !busy) handleGenerate(false);
+              }}
+              placeholder="every window in the house, counted twice"
+              className="win-sunken flex-1 h-[24px] px-2 text-[13px]"
+            />
+            <ActionButton icon="generate" onClick={() => handleGenerate(false)} disabled={busy}>
+              {busy ? 'Working…' : 'Generate'}
+            </ActionButton>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[11px] text-black/60 mr-1">Style</span>
+            {STYLES.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                title={option.hint}
+                onClick={() => setStyleId(option.id)}
+                className={`${
+                  option.id === styleId ? 'win-sunken font-bold' : 'win-raised'
+                } h-[21px] px-2.5 text-[11px]`}
+              >
+                {option.label}
+              </button>
+            ))}
+            <span className="text-[11px] text-black/50 ml-1">{style.hint}</span>
+          </div>
         </GroupBox>
 
         <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-2">
           <GroupBox
-            label={presetId ? 'Reference Page' : 'Generated Page'}
+            label="Generated Page"
             icon="visualization"
             className="flex-1 min-h-0 flex flex-col basis-1/2"
             bodyClassName="flex-1 min-h-0 flex flex-col gap-2"
@@ -266,7 +278,7 @@ export default function App() {
               </div>
             )}
             <SketchCanvas
-              code={result?.sketchCode ?? null}
+              code={code || null}
               runToken={runToken}
               status={status}
               errorMessage={status === 'error' ? errorMessage : null}
@@ -276,8 +288,8 @@ export default function App() {
               }}
             />
             <div className="shrink-0 flex flex-wrap gap-2">
-              <ActionButton icon="generate" onClick={() => setRunToken((n) => n + 1)} disabled={!result}>
-                Run Again
+              <ActionButton icon="generate" onClick={() => setRunToken((n) => n + 1)} disabled={!code}>
+                {edited ? 'Run Edits' : 'Run Again'}
               </ActionButton>
               <ActionButton icon="download" onClick={handleDownloadPng} disabled={!result}>
                 Export PNG
@@ -286,17 +298,17 @@ export default function App() {
           </GroupBox>
 
           <GroupBox
-            label={presetId ? 'Reference p5.js Code' : 'Generated p5.js Code'}
+            label="Generated p5.js Code"
             icon="code"
             className="flex-1 min-h-0 flex flex-col basis-1/2"
             bodyClassName="flex-1 min-h-0 flex flex-col gap-2"
           >
-            <CodeEditor code={result?.sketchCode ?? ''} />
+            <CodeEditor code={code} onChange={setCode} />
             <div className="shrink-0 flex flex-wrap gap-2">
-              <ActionButton icon="copy" onClick={handleCopy} disabled={!result}>
+              <ActionButton icon="copy" onClick={handleCopy} disabled={!code}>
                 Copy
               </ActionButton>
-              <ActionButton icon="download" onClick={handleSaveCode} disabled={!result}>
+              <ActionButton icon="download" onClick={handleSaveCode} disabled={!code}>
                 Save .js
               </ActionButton>
               <ActionButton icon="remix" onClick={() => handleGenerate(true)} disabled={!result || busy}>
