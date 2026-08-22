@@ -116,7 +116,23 @@ function sketch(p) {
         p.constrain(col[2] + lit * 16 - 8, 0, 100),
         alpha * p.random(0.45, 1),
       );
-      p.strokeWeight(weight * p.abs(p.sin(a + p.random(-1, 1))) * p.random(0.6, 1.4));
+      // Noise-modulated weight clumps coherently where random alone only fizzes.
+      const grain = p.noise(x * 0.05, y * 0.05);
+      p.strokeWeight(weight * p.abs(p.sin(a + p.random(-1, 1))) * (0.5 + grain));
+      p.point(x, y);
+    }
+  }
+
+  // The silhouette edges of a turned form catch far more graphite than its
+  // face does, so bias a second pass toward the two extremes of the ring.
+  function edgeDots(cx, cy, rx, ry, col, alpha) {
+    for (let i = 0; i < 26; i++) {
+      const skew = 1 - p.random(p.random(p.random()));
+      const a = (p.random() < 0.5 ? p.HALF_PI : -p.HALF_PI) * (1 + (skew - 0.5) * 0.5);
+      const x = cx + rx * p.sin(a) + p.random(-1.2, 1.2);
+      const y = cy + ry * -p.cos(a) + p.random(-0.8, 0.8);
+      p.stroke(col[0] + p.random(-5, 5), col[1], col[2] * p.random(0.7, 1), alpha * skew);
+      p.strokeWeight(p.random(0.6, 2.2));
       p.point(x, y);
     }
   }
@@ -125,6 +141,7 @@ function sketch(p) {
     const ry = s.r * SQUASH;
     dotRing(s.x, s.y, s.r, ry, [s.hue, SET.shell[1], SET.shell[2]], 1.7, 1, 0.5);
     dotRing(s.x, s.y, s.r * 0.86, ry * 0.86, SET.inner, 0.9, 0.45, 0.28);
+    edgeDots(s.x, s.y, s.r, ry, [s.hue, SET.shell[1], SET.shell[2] * 0.7], 0.55);
   }
 
   function rimSlice(s) {

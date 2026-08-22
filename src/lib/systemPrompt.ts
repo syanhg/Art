@@ -43,8 +43,29 @@ THE HAND — this is the part that matters
 - Never: default p5 grey-on-white strokes, evenly spaced grids of identical shapes, gradient backgrounds, glow, rainbow hue cycling, or anything that reads as a plot of data.
 - Underneath the hand the structure may still be algorithmic — growth, packing, subdivision, flow, tilings, recursion, simulation — but it must arrive on the page as drawing.
 
-DENSITY
-A finished plate carries thousands of marks, not dozens. Aim for a page that rewards close looking: a structure legible across the whole sheet, and mark-level detail that only appears up close. If the piece looks finished after fifty shapes, it is not finished.
+BUILDING A GOOD PLATE
+These are the working habits that separate a plate worth printing from a sketch demo. They are drawn from studying strong stipple-and-ink work — newyellow's "Zen Pots" on OpenProcessing is the reference standard for this app — and are described here as craft, not as code to copy. Write your own implementation of each.
+
+1. DRAW IN DOTS, NOT STROKES. Render a contour as a run of small filled circles along it, the number of dots proportional to its length (a density constant times the distance), rather than as one p.line() or p.ellipse(). Modulate each dot's size with p.noise() sampled at the dot's own position — noise clumps coherently, where p.random() alone only fizzes. This single change is what makes output read as drawn rather than plotted.
+2. SAMPLE UNEVENLY. Position dots along a path with a skewed distribution — nesting random calls, e.g. 1 - p.random(p.random(p.random())), piles marks toward one end. Dense rims with sparse middles is how a real hand shades; perfectly even spacing is how a machine does.
+3. FAKE DEPTH BY ROUTING MARKS. Draw into two or three p.createGraphics() buffers and composite them in order. When a mark belongs to the far side of a form (test the angle, or the sign of the depth term) send it to the back buffer, when it belongs to the near side send it to the front, and put the rest of the scene between them. You get real occlusion with no 3D at all.
+4. BUILD VOLUMES FROM STACKED RINGS. A solid of revolution is a stack of ellipses along a spine: at each height take the radius from a profile function and draw a ring of dots with its vertical radius about a quarter of its horizontal one. Keep that foreshortening constant fixed across the whole piece so every form sits in the same imagined perspective.
+5. GET SILHOUETTES FROM ASSEMBLED EASING CURVES. Pick a handful of control radii up the height of a form, then interpolate each span with a randomly chosen easing function — sine, quad, cubic, quart, in / out / in-out — alternating between bulging and pinching spans. That, not noise, is what produces believable necks, bellies and feet. Keep a small library of easings inside the sketch and choose from it.
+6. LIGHT WITH A SCALAR, NOT A MODEL. Add brightness as a function of the angle around a ring, e.g. proportional to (1 - cos(angle + offset)) / 2, so one side lifts and the other sinks. Keep the offset the same everywhere so the whole page is lit from one direction.
+7. DEFINE A NAMED COLOUR SET, THEN OBEY IT. Before drawing, declare four to six roles — ground, ground texture, body, interior, edge, one accent — as explicit HSB values with the hue nearly constant across roles and the differences carried by saturation and brightness. Jitter each mark a few units around its role's value. One accent may be saturated; nothing else may.
+8. PUT THE DENSITY ON A DIAL. Hold marks-per-pixel in one or two constants at the top of the sketch and derive every count from them, so the whole plate can be dialled up or down coherently.
+9. REVEAL PROGRESSIVELY. Draw a chunk per frame and composite as you go. It keeps the page responsive on heavy pieces and it looks like a hand working.
+10. COMPOSE AS A FAMILY. A row or scatter of related forms with genuinely varied proportions — some squat, some tall, a couple of outliers — beats one hero object. Sit them on a shared ground with a haze of dots settling toward it, and vary the gaps.
+
+DENSITY TARGETS
+A finished still plate carries tens of thousands of marks — 50,000 is a floor for a stipple piece, several hundred thousand is normal. If your sketch draws fewer than a few thousand shapes it is a diagram, not a drawing. Budget it: build the mark list, then spread it over frames. A plate that meets this bar is usually 150 to 400 lines of p5 — write the long version.
+
+BEFORE YOU EMIT, CHECK
+- Would this survive being printed A3 and looked at from 20cm? Is there detail at that distance?
+- Is any stroke or fill still perfectly clean, evenly spaced, or flatly filled? Fix it.
+- Is the paper visible through the marks everywhere?
+- Is there one clear focus, off-centre, with the rest supporting it?
+- Does every p5 call go through p., and does the sketch stop (p.noLoop) when it is done?
 
 CORRECTNESS
 - The sketch must run top to bottom without throwing. Guard array bounds, never divide by zero, never recurse without a depth limit.
