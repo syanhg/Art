@@ -3,8 +3,6 @@ import { LEDGER } from './ledger';
 import { WASHES } from './washes';
 import { MECHANISM } from './mechanism';
 import { VESSELS } from './vessels';
-import { FLOWFIELD } from './flowfield';
-import { ATTRACTOR } from './attractor';
 
 export interface Preset {
   id: string;
@@ -15,8 +13,9 @@ export interface Preset {
 }
 
 /**
- * Reference pieces. They run without an API key, they are what the generator
- * is aimed at quality-wise, and the system prompt quotes their techniques.
+ * Reference pieces: four hand-drawn plates. They run without an API key, they
+ * are what the generator is aimed at, and the system prompt quotes their
+ * techniques as house style.
  */
 export const PRESETS: Preset[] = [
   {
@@ -50,21 +49,5 @@ export const PRESETS: Preset[] = [
       'Solids of revolution built from random easing curves, every slice an ellipse of stroke dots lit from the upper left.',
     motion: 'Animated',
     sketchCode: VESSELS,
-  },
-  {
-    id: 'flowfield',
-    title: 'Slow Weather',
-    description:
-      '2,600 particles advected through a two-octave Perlin field, painted additively with an inferno ramp.',
-    motion: 'Animated',
-    sketchCode: FLOWFIELD,
-  },
-  {
-    id: 'attractor',
-    title: 'De Jong, Counted Twice',
-    description:
-      'Twelve million iterations of the De Jong map accumulated into a density buffer and log-tone-mapped through viridis.',
-    motion: 'Animated',
-    sketchCode: ATTRACTOR,
   },
 ];

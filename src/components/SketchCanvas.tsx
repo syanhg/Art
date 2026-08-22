@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { runSketch, type SketchHandle, type SketchStatus } from '../lib/p5runner';
-import type { Background } from '../types';
 
 export type { SketchStatus };
 
@@ -8,7 +7,6 @@ export function SketchCanvas({
   code,
   runToken,
   paused,
-  background,
   status,
   errorMessage,
   onError,
@@ -18,7 +16,6 @@ export function SketchCanvas({
   /** Bumped by the host to force a re-run of the same source. */
   runToken: number;
   paused: boolean;
-  background: Background;
   status: SketchStatus;
   errorMessage: string | null;
   onError: (message: string) => void;
@@ -28,8 +25,11 @@ export function SketchCanvas({
   const handleRef = useRef<SketchHandle | null>(null);
   const onErrorRef = useRef(onError);
   const onCanvasRef = useRef(onCanvas);
-  onErrorRef.current = onError;
-  onCanvasRef.current = onCanvas;
+
+  useEffect(() => {
+    onErrorRef.current = onError;
+    onCanvasRef.current = onCanvas;
+  });
 
   useEffect(() => {
     const host = hostRef.current;
@@ -60,19 +60,15 @@ export function SketchCanvas({
     else handle.resume();
   }, [paused, code, runToken]);
 
-  const checker = background === 'Transparent';
-
   return (
     <div className="win-sunken win-scroll h-full min-h-0 flex flex-col items-center justify-center p-2">
       <div
         ref={hostRef}
-        className={`sketch-stage flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden transition-opacity-fast ${
-          checker ? 'checker' : ''
-        }`}
+        className="sketch-stage flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden transition-opacity-fast"
         style={{ display: code ? undefined : 'none' }}
       />
       {!code && (
-        <div className={`w-full h-full flex items-center justify-center text-[12px] text-black/50 ${checker ? 'checker' : ''}`}>
+        <div className="w-full h-full flex items-center justify-center text-[12px] text-black/50">
           {status === 'thinking' && 'Querying model…'}
           {status === 'rendering' && 'Compiling sketch…'}
           {status === 'error' && 'No sketch'}

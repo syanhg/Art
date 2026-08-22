@@ -1,42 +1,25 @@
 export type Provider = 'openai' | 'anthropic' | 'gemini';
 
-export const CATEGORIES = [
-  'Flow',
-  'Fractal',
-  'Geometry',
-  'Organic',
-  'Particles',
-  'Physics',
-  'Chaos',
-  'Plotter',
-  'Glitch',
-] as const;
-export type Category = (typeof CATEGORIES)[number];
-
-export const PALETTES = [
-  'Inferno',
-  'Viridis',
-  'Plasma',
-  'Turbo',
-  'Cividis',
-  'Risograph',
-  'Graphite',
-] as const;
-export type Palette = (typeof PALETTES)[number];
-
+/** How the piece is drawn — the mark-making, not the subject. */
 export const STYLES = [
-  'Gallery',
-  'Dreamlike',
-  'Scientific',
-  'Minimal',
-  'Neon',
-  'Notebook',
-  'Blueprint',
+  'Pencil',
+  'Pen & Ink',
+  'Ballpoint',
+  'Charcoal',
+  'Watercolour',
+  'Marker',
+  'Chalk',
+  'Field Notebook',
 ] as const;
 export type Style = (typeof STYLES)[number];
 
-export const BACKGROUNDS = ['White', 'Black', 'Paper', 'Transparent'] as const;
-export type Background = (typeof BACKGROUNDS)[number];
+/** What it is drawn with. */
+export const INKS = ['Graphite', 'Black Ink', 'Blue Biro', 'Red & Blue', 'Sepia', 'Faded Colour'] as const;
+export type Ink = (typeof INKS)[number];
+
+/** What it is drawn on. */
+export const PAPERS = ['Graph Paper', 'Ruled Notebook', 'Kraft', 'Newsprint', 'Plain'] as const;
+export type Paper = (typeof PAPERS)[number];
 
 export const MOTIONS = ['Still', 'Animated', 'Looping'] as const;
 export type Motion = (typeof MOTIONS)[number];
@@ -57,16 +40,8 @@ export interface GenerationResult {
 
 export interface DesignOptions {
   prompt: string;
-  category: Category;
-  palette: Palette;
   style: Style;
-  background: Background;
+  ink: Ink;
+  paper: Paper;
   motion: Motion;
 }
-
-export const BACKGROUND_COLORS: Record<Background, string> = {
-  White: '#ffffff',
-  Black: '#000000',
-  Paper: '#efeade',
-  Transparent: 'transparent',
-};

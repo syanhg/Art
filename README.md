@@ -6,16 +6,20 @@ The UI is a Windows 98-styled desktop app.
 
 ## How it works
 
-1. You pick a provider and paste your own API key, plus a prompt and a few design controls (category, palette, style, background, motion).
+1. You pick a provider and paste your own API key, plus a prompt and four design controls — **style** (how it is drawn), **ink** (what with), **paper** (what on) and **motion**.
 2. The app sends your prompt + a hardcoded system prompt + those controls directly to the provider's API from your browser, requesting a structured JSON response: `{ title, description, sketchCode }`.
 3. The returned source is shown read-only in a Monaco editor and executed as an instance-mode p5 sketch (`function sketch(p) { … }`) mounted straight into the page, so animated pieces really animate.
 4. You can copy the sketch, save it as a `.js` file, export the canvas as a PNG, re-run it, pause it, or "Remix."
 
 Your API key is stored only in `localStorage` and is sent directly to the provider's API (OpenAI / Anthropic / Google).
 
+## Hand-drawn styles
+
+Everything the app makes is aimed at looking made by hand — drawn, hatched, stippled, washed, rubbed, lettered — never at a chart or a shader demo. The style control picks the mark-making: Pencil, Pen & Ink, Ballpoint, Charcoal, Watercolour, Marker, Chalk, Field Notebook. Inks run Graphite, Black Ink, Blue Biro, Red & Blue, Sepia, Faded Colour; papers Graph Paper, Ruled Notebook, Kraft, Newsprint, Plain.
+
 ## Reference sketches
 
-Six pieces ship with the app and run without an API key. They are the quality bar the system prompt aims at, and it quotes their techniques:
+Four plates ship with the app and run without an API key (**References** menu). They are the quality bar the generator aims at:
 
 | Sketch | Technique |
 | --- | --- |
@@ -23,8 +27,6 @@ Six pieces ship with the app and run without an API key. They are the quality ba
 | Washes Against the Wall | gouache cells overprinted in `MULTIPLY` on a printed engineering grid |
 | Skips by the Radiator Pipe | exploded gear train with blurred graphite smudges and dashed leaders |
 | Nine Vessels, Stippled | solids of revolution from random easing curves, drawn as dot rings — technique after [newyellow's *Zen Pots*](https://openprocessing.org/sketch/2036000) |
-| Slow Weather | 2,600 particles advected through a two-octave Perlin field, additive inferno ramp |
-| De Jong, Counted Twice | 12M iterations of the De Jong map, density buffer, log tone mapping through viridis |
 
 ## Running it
 

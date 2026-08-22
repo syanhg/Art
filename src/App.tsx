@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  BACKGROUNDS,
-  CATEGORIES,
+  INKS,
   MOTIONS,
-  PALETTES,
+  PAPERS,
   PROVIDERS,
   STYLES,
-  type Background,
-  type Category,
   type GenerationResult,
+  type Ink,
   type Motion,
-  type Palette,
+  type Paper,
   type Provider,
   type Style,
 } from './types';
@@ -67,10 +65,9 @@ export default function App() {
   );
 
   const [prompt, setPrompt] = useState('');
-  const [category, setCategory] = useState<Category>('Flow');
-  const [palette, setPalette] = useState<Palette>('Graphite');
-  const [style, setStyle] = useState<Style>('Notebook');
-  const [background, setBackground] = useState<Background>('Paper');
+  const [style, setStyle] = useState<Style>('Field Notebook');
+  const [ink, setInk] = useState<Ink>('Graphite');
+  const [paper, setPaper] = useState<Paper>('Graph Paper');
   const [motion, setMotion] = useState<Motion>('Still');
 
   const [status, setStatus] = useState<SketchStatus>('idle');
@@ -118,7 +115,7 @@ export default function App() {
 
     try {
       const systemPrompt = buildSystemPrompt();
-      let userPrompt = buildUserPrompt({ prompt, category, palette, style, background, motion });
+      let userPrompt = buildUserPrompt({ prompt, style, ink, paper, motion });
       if (remix) {
         userPrompt +=
           '\n\nThis is a remix request: produce a different variation (different seed, parameters or composition) of the same theme, not the same sketch.';
@@ -247,10 +244,9 @@ export default function App() {
 
           <GroupBox label="Design Controls" icon="category">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
-              <LabeledSelect label="Category" options={CATEGORIES} value={category} onChange={setCategory} />
-              <LabeledSelect label="Palette" options={PALETTES} value={palette} onChange={setPalette} />
               <LabeledSelect label="Style" options={STYLES} value={style} onChange={setStyle} />
-              <LabeledSelect label="Background" options={BACKGROUNDS} value={background} onChange={setBackground} />
+              <LabeledSelect label="Ink" options={INKS} value={ink} onChange={setInk} />
+              <LabeledSelect label="Paper" options={PAPERS} value={paper} onChange={setPaper} />
               <LabeledSelect label="Motion" options={MOTIONS} value={motion} onChange={setMotion} />
             </div>
           </GroupBox>
@@ -264,32 +260,12 @@ export default function App() {
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !busy) handleGenerate(false);
             }}
-            placeholder="a ledger page of a week that never happened, kept in ink"
+            placeholder="a week of tide readings kept by hand, hatched and annotated"
             className="win-sunken flex-1 h-[24px] px-2 text-[13px]"
           />
           <ActionButton icon="generate" onClick={() => handleGenerate(false)} disabled={busy}>
             {busy ? 'Working…' : 'Generate'}
           </ActionButton>
-        </GroupBox>
-
-        <GroupBox
-          label="Reference Sketches"
-          icon="visualization"
-          className="shrink-0"
-          bodyClassName="flex flex-wrap items-center gap-2"
-        >
-          {PRESETS.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              title={preset.description}
-              onClick={() => loadPreset(preset)}
-              className="win-raised h-[24px] px-2 text-[12px] cursor-default"
-            >
-              {preset.title}
-            </button>
-          ))}
-          <span className="text-[11px] text-black/60">No API key needed — these ship with the app.</span>
         </GroupBox>
 
         <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-2">
@@ -309,7 +285,6 @@ export default function App() {
               code={result?.sketchCode ?? null}
               runToken={runToken}
               paused={paused}
-              background={background}
               status={status}
               errorMessage={status === 'error' ? errorMessage : null}
               onError={handleSketchError}
@@ -390,8 +365,8 @@ export default function App() {
               <div className="text-[12px] leading-snug">
                 <p className="font-bold mb-1">{APP_NAME}</p>
                 <p>
-                  Describe a piece, pick a category, palette, style and motion, and GPT / Claude / Gemini writes a
-                  p5.js sketch that runs live in your browser. Six reference sketches ship with the app.
+                  Describe a piece, pick a drawing style, ink, paper and motion, and GPT / Claude / Gemini writes
+                  a p5.js sketch that draws it live in your browser, by hand.
                 </p>
               </div>
             </div>
