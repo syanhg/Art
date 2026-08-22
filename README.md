@@ -1,8 +1,6 @@
-# p5 Art Generator
+# Art Generator
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-**Live: [syanhg.github.io/Art](https://syanhg.github.io/Art/)**
 
 A single-page, no-backend app that turns one line of description into a whole hand-drawn page: an LLM writes a p5.js sketch, and that sketch draws the sheet for real, live, in your browser.
 
