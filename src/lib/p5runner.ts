@@ -19,7 +19,7 @@ const FORBIDDEN = [
   /\bimport\s*\(/,
 ];
 
-export type SketchStatus = 'idle' | 'thinking' | 'rendering' | 'done' | 'error';
+export type SketchStatus = 'idle' | 'thinking' | 'repairing' | 'rendering' | 'done' | 'error';
 
 export interface SketchHandle {
   instance: p5;
@@ -57,35 +57,94 @@ export function sanitizeSketch(raw: string): string {
 }
 
 /**
- * Counts brackets outside strings, comments and regexes well enough to tell a
- * response that was cut off mid-structure from one that is merely wrong.
+ * Walks the source outside strings, comments and template literals, matching
+ * brackets by kind. Overall counts can balance while a ")" is closed by a "]",
+ * which is exactly the failure the parser reports without a line number.
  */
-function unclosedDepth(code: string): number {
-  let depth = 0;
-  let i = 0;
+export interface BracketProblem {
+  kind: 'mismatch' | 'unclosed';
+  line: number;
+  column: number;
+  found?: string;
+  expected?: string;
+  text: string;
+}
+
+const CLOSERS: Record<string, string> = { ')': '(', ']': '[', '}': '{' };
+
+export function findBracketProblem(code: string): BracketProblem | null {
+  const lines = code.split('\n');
+  const stack: { char: string; line: number; column: number }[] = [];
+  let line = 1;
+  let column = 1;
   let quote = '';
+  let i = 0;
+
+  const at = (n: number) => (lines[n - 1] ?? '').trim().slice(0, 120);
+
   while (i < code.length) {
     const c = code[i];
     const next = code[i + 1];
+    if (c === '\n') {
+      line++;
+      column = 0;
+    }
+
     if (quote) {
-      if (c === '\\') i++;
-      else if (c === quote) quote = '';
+      if (c === '\\') {
+        i += 2;
+        column += 2;
+        continue;
+      }
+      if (c === quote) quote = '';
     } else if (c === '"' || c === "'" || c === '`') {
       quote = c;
     } else if (c === '/' && next === '/') {
-      i = code.indexOf('\n', i);
-      if (i < 0) break;
+      const nl = code.indexOf('\n', i);
+      if (nl < 0) break;
+      i = nl;
+      continue;
     } else if (c === '/' && next === '*') {
       const end = code.indexOf('*/', i + 2);
-      i = end < 0 ? code.length : end + 1;
-    } else if (c === '{' || c === '[' || c === '(') {
-      depth++;
-    } else if (c === '}' || c === ']' || c === ')') {
-      depth--;
+      const skipped = (end < 0 ? code.slice(i) : code.slice(i, end + 2)).split('\n').length - 1;
+      line += skipped;
+      i = end < 0 ? code.length : end + 2;
+      continue;
+    } else if (c === '(' || c === '[' || c === '{') {
+      stack.push({ char: c, line, column });
+    } else if (c === ')' || c === ']' || c === '}') {
+      const open = stack.pop();
+      if (!open || open.char !== CLOSERS[c]) {
+        return {
+          kind: 'mismatch',
+          line,
+          column,
+          found: c,
+          expected: open ? { '(': ')', '[': ']', '{': '}' }[open.char] : 'nothing',
+          text: at(line),
+        };
+      }
     }
+
     i++;
+    column++;
   }
-  return depth;
+
+  const left = stack.pop();
+  if (left) {
+    return { kind: 'unclosed', line: left.line, column: left.column, found: left.char, text: at(left.line) };
+  }
+  return null;
+}
+
+/** Compiles without mounting, so bad source is caught before it reaches p5. */
+export function validateSketch(source: string): string | null {
+  try {
+    compileSketch(source);
+    return null;
+  } catch (err) {
+    return describeError(err);
+  }
 }
 
 /** Turns the generated source into an instance-mode sketch factory. */
@@ -105,16 +164,18 @@ export function compileSketch(source: string): (p: p5) => void {
       `"use strict";\n${code}\n;return typeof sketch === "function" ? sketch : null;`,
     ) as () => unknown;
   } catch (err) {
-    const depth = unclosedDepth(code);
-    const tail = code.slice(-160).replace(/\s+/g, ' ');
-    const hint =
-      depth > 0
-        ? `The response looks cut off — ${depth} bracket${depth === 1 ? '' : 's'} were never closed. ` +
-          'Generate again, or ask for a shorter page.'
-        : 'Check the source in the code pane.';
-    throw new Error(
-      `The generated sketch has a syntax error. ${describeError(err)}\n${hint}\nThe source ends: …${tail}`,
-    );
+    const problem = findBracketProblem(code);
+    let hint = 'Check the source in the code pane.';
+    if (problem?.kind === 'mismatch') {
+      hint =
+        `Line ${problem.line}: found "${problem.found}" where "${problem.expected}" was expected.\n` +
+        `  ${problem.text}`;
+    } else if (problem?.kind === 'unclosed') {
+      hint =
+        `The response looks cut off: "${problem.found}" opened on line ${problem.line} is never closed.\n` +
+        `  ${problem.text}`;
+    }
+    throw new Error(`The generated sketch has a syntax error. ${describeError(err)}\n${hint}`);
   }
 
   const fn = factory();

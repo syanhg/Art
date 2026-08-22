@@ -138,6 +138,24 @@ async function callGemini({ apiKey, model, systemPrompt, userPrompt }: GenerateA
   return validateResult(JSON.parse(text));
 }
 
+/**
+ * Asks the model to fix source that would not parse. Cheaper and far less
+ * annoying than making the user press Generate again.
+ */
+export function buildRepairPrompt(result: GenerationResult, error: string): string {
+  return `The sketch below does not parse. The browser reports:
+
+${error}
+
+Return the SAME piece, corrected so it parses — keep the title, the composition and every mark identical, and change only what is needed to make it valid JavaScript. Respond with the JSON object described in the system prompt, with the corrected source in "sketchCode".
+
+TITLE
+${result.title}
+
+SOURCE
+${result.sketchCode}`;
+}
+
 export async function generateSketch(args: GenerateArgs): Promise<GenerationResult> {
   switch (args.provider) {
     case 'openai':

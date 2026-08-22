@@ -10,8 +10,8 @@ import { SketchCanvas } from './components/SketchCanvas';
 import { ActionButton } from './components/ActionButton';
 import { Icon } from './components/Icon';
 import { buildSystemPrompt, buildUserPrompt } from './lib/systemPrompt';
-import { generateSketch } from './lib/llm';
-import { canvasToPng, type SketchStatus } from './lib/p5runner';
+import { buildRepairPrompt, generateSketch } from './lib/llm';
+import { canvasToPng, validateSketch, type SketchStatus } from './lib/p5runner';
 
 const APP_NAME = 'Art Generator';
 
@@ -99,13 +99,21 @@ export default function App() {
           '\n\nThis is a remix request: produce a different variation (different seed, parameters or composition) of the same theme, not the same sketch.';
       }
 
-      const generated = await generateSketch({
-        provider: providerTyped,
-        apiKey,
-        model,
-        systemPrompt,
-        userPrompt,
-      });
+      const call = (text: string) =>
+        generateSketch({ provider: providerTyped, apiKey, model, systemPrompt, userPrompt: text });
+
+      let generated = await call(userPrompt);
+
+      // Compile before mounting: a sketch that will not parse gets one repair
+      // round trip rather than landing in front of the user as an error.
+      let problem = validateSketch(generated.sketchCode);
+      if (problem) {
+        setStatus('repairing');
+        const repaired = await call(buildRepairPrompt(generated, problem));
+        const stillBroken = validateSketch(repaired.sketchCode);
+        if (stillBroken) throw new Error(stillBroken);
+        generated = repaired;
+      }
 
       setStatus('rendering');
       show(generated);
@@ -153,13 +161,15 @@ export default function App() {
     setErrorMessage(null);
   }
 
-  const busy = status === 'thinking' || status === 'rendering';
+  const busy = status === 'thinking' || status === 'rendering' || status === 'repairing';
 
   const statusText =
     status === 'thinking'
       ? `Querying ${PROVIDERS.find((p) => p.id === provider)?.label}…`
-      : status === 'rendering'
-        ? 'Compiling sketch…'
+      : status === 'repairing'
+        ? 'Sketch did not parse — asking the model to fix it…'
+        : status === 'rendering'
+          ? 'Compiling sketch…'
         : status === 'error'
           ? (errorMessage ?? 'Error')
           : result

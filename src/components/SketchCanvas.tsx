@@ -61,6 +61,7 @@ export function SketchCanvas({
       {!code && (
         <div className="w-full h-full flex items-center justify-center text-[12px] text-black/50">
           {status === 'thinking' && 'Querying model…'}
+          {status === 'repairing' && 'Fixing the sketch…'}
           {status === 'rendering' && 'Drawing the page…'}
           {status === 'error' && 'No page'}
           {status === 'idle' && 'No page yet — describe one above'}
