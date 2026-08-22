@@ -43,6 +43,19 @@ function describeError(err: unknown): string {
   return String(err);
 }
 
+/** Adds the likely cause to the p5 messages that do not explain themselves. */
+function describeRuntimeError(err: unknown, skippedColors: number): string {
+  const message = describeError(err);
+  const extra: string[] = [];
+  if (/valid color representation/i.test(message)) {
+    extra.push('A colour argument was undefined or NaN — usually a palette lookup that missed.');
+  }
+  if (skippedColors > 0) {
+    extra.push(`${skippedColors} unusable colour call${skippedColors === 1 ? '' : 's'} were skipped before this.`);
+  }
+  return extra.length ? `${message}\n${extra.join('\n')}` : message;
+}
+
 /** Turns the generated source into an instance-mode sketch factory. */
 export function compileSketch(code: string): (p: p5) => void {
   for (const pattern of FORBIDDEN) {
@@ -68,6 +81,49 @@ export function compileSketch(code: string): (p: p5) => void {
   return fn as (p: p5) => void;
 }
 
+/**
+ * p5 throws "[object Arguments] is not a valid color representation" as soon as
+ * a colour argument is undefined or NaN — usually a palette index that missed.
+ * One bad lookup should not kill the whole page, so colour arguments are
+ * cleaned up before they reach p5 and hopeless calls are skipped.
+ */
+function cleanColorArgs(args: unknown[]): unknown[] | null {
+  if (args.length === 0) return null;
+
+  // p5.Color instances and CSS strings pass straight through.
+  const first = args[0];
+  if (typeof first === 'string') return args;
+  if (first && typeof first === 'object' && !Array.isArray(first)) {
+    return 'levels' in (first as object) ? args : null;
+  }
+
+  const flat: number[] = [];
+  for (const arg of Array.isArray(first) && args.length === 1 ? (first as unknown[]) : args) {
+    const n = typeof arg === 'number' ? arg : Number(arg);
+    if (Number.isFinite(n)) flat.push(n);
+  }
+  if (flat.length === 0) return null;
+  return flat.slice(0, 4);
+}
+
+const COLOR_METHODS = ['fill', 'stroke', 'background', 'tint'] as const;
+
+function guardColorMethods(p: p5, onSkip: () => void): void {
+  for (const name of COLOR_METHODS) {
+    const target = p as unknown as Record<string, (...a: unknown[]) => unknown>;
+    const original = target[name];
+    if (typeof original !== 'function') continue;
+    target[name] = function guardedColor(this: p5, ...args: unknown[]) {
+      const clean = cleanColorArgs(args);
+      if (!clean) {
+        onSkip();
+        return undefined;
+      }
+      return original.apply(this, clean);
+    };
+  }
+}
+
 /** Mounts a compiled sketch into `container`, replacing anything already there. */
 export function runSketch({ code, container, onError, onCanvas }: RunOptions): SketchHandle {
   const factory = compileSketch(code);
@@ -77,11 +133,16 @@ export function runSketch({ code, container, onError, onCanvas }: RunOptions): S
   const fail = (err: unknown) => {
     if (failed) return;
     failed = true;
-    onError(describeError(err));
+    onError(typeof err === 'string' ? err : describeError(err));
   };
+
+  let skipped = 0;
 
   const instance = new p5((p: p5) => {
     factory(p);
+    guardColorMethods(p, () => {
+      skipped++;
+    });
 
     // Guard the lifecycle hooks the sketch just installed so a bad frame
     // surfaces as a message instead of an endless console spew.
@@ -92,7 +153,7 @@ export function runSketch({ code, container, onError, onCanvas }: RunOptions): S
         try {
           return (original as (...a: unknown[]) => unknown).apply(this, args);
         } catch (err) {
-          fail(err);
+          fail(describeRuntimeError(err, skipped));
           try {
             p.noLoop();
           } catch {
