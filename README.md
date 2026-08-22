@@ -2,6 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+**Live: [syanhg.github.io/Art](https://syanhg.github.io/Art/)**
+
 A single-page, no-backend app that turns a natural-language prompt into generative art: an LLM writes a p5.js sketch, and that sketch runs for real, live, in your browser.
 
 The UI is a Windows 98-styled desktop app.
@@ -41,7 +43,7 @@ npm install
 npm run dev
 ```
 
-`npm run build` type-checks and bundles to `dist/`; pushes to `main` deploy to GitHub Pages.
+`npm run build` type-checks and bundles to `dist/`; pushes to `main` deploy to [GitHub Pages](https://syanhg.github.io/Art/) via [.github/workflows/deploy.yml](.github/workflows/deploy.yml).
 
 ## Safety note
 
