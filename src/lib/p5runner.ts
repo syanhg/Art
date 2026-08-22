@@ -43,8 +43,55 @@ function describeError(err: unknown): string {
   return String(err);
 }
 
+/**
+ * Models sometimes wrap the source in a markdown fence or open with a line of
+ * prose. Both are syntax errors, and both are trivially recoverable.
+ */
+export function sanitizeSketch(raw: string): string {
+  let code = raw.trim();
+  const fence = code.match(/^```(?:javascript|js)?\s*\n([\s\S]*?)\n?```$/);
+  if (fence) code = fence[1].trim();
+  const start = code.search(/(?:^|\n)\s*(?:\/\/|\/\*|function\s+sketch\b|const\b|let\b|var\b)/);
+  if (start > 0) code = code.slice(start).trim();
+  return code;
+}
+
+/**
+ * Counts brackets outside strings, comments and regexes well enough to tell a
+ * response that was cut off mid-structure from one that is merely wrong.
+ */
+function unclosedDepth(code: string): number {
+  let depth = 0;
+  let i = 0;
+  let quote = '';
+  while (i < code.length) {
+    const c = code[i];
+    const next = code[i + 1];
+    if (quote) {
+      if (c === '\\') i++;
+      else if (c === quote) quote = '';
+    } else if (c === '"' || c === "'" || c === '`') {
+      quote = c;
+    } else if (c === '/' && next === '/') {
+      i = code.indexOf('\n', i);
+      if (i < 0) break;
+    } else if (c === '/' && next === '*') {
+      const end = code.indexOf('*/', i + 2);
+      i = end < 0 ? code.length : end + 1;
+    } else if (c === '{' || c === '[' || c === '(') {
+      depth++;
+    } else if (c === '}' || c === ']' || c === ')') {
+      depth--;
+    }
+    i++;
+  }
+  return depth;
+}
+
 /** Turns the generated source into an instance-mode sketch factory. */
-export function compileSketch(code: string): (p: p5) => void {
+export function compileSketch(source: string): (p: p5) => void {
+  const code = sanitizeSketch(source);
+
   for (const pattern of FORBIDDEN) {
     if (pattern.test(code)) {
       throw new Error(`The generated sketch was blocked: it uses a disallowed API (${pattern.source}).`);
@@ -58,7 +105,16 @@ export function compileSketch(code: string): (p: p5) => void {
       `"use strict";\n${code}\n;return typeof sketch === "function" ? sketch : null;`,
     ) as () => unknown;
   } catch (err) {
-    throw new Error(`The generated sketch has a syntax error. ${describeError(err)}`);
+    const depth = unclosedDepth(code);
+    const tail = code.slice(-160).replace(/\s+/g, ' ');
+    const hint =
+      depth > 0
+        ? `The response looks cut off — ${depth} bracket${depth === 1 ? '' : 's'} were never closed. ` +
+          'Generate again, or ask for a shorter page.'
+        : 'Check the source in the code pane.';
+    throw new Error(
+      `The generated sketch has a syntax error. ${describeError(err)}\n${hint}\nThe source ends: …${tail}`,
+    );
   }
 
   const fn = factory();

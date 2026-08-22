@@ -86,7 +86,8 @@ BEFORE YOU EMIT, CHECK
 - Does the palette come from the subject, unevenly distributed, six pigments at most?
 - Are all six layers present, including the annotation column and the furniture?
 - Would this survive being printed A3 and read from 20cm?
-- Does every call go through p., and does the sketch call p.noLoop() when finished?`;
+- Does every call go through p., and does the sketch call p.noLoop() when finished?
+- Is the source valid JavaScript with every bracket balanced, emitted raw with no markdown fence? A page that does not parse is worth nothing, so if you are running long, cut the number of objects rather than stopping mid-structure.`;
 }
 
 export function buildUserPrompt(prompt: string): string {
