@@ -1,4 +1,6 @@
-export const MECHANISM = String.raw`
+import { withFont } from './handfont';
+
+export const MECHANISM = withFont(String.raw`
 // "Skips by the Radiator Pipe" — an exploded gear train drawn in aniline
 // purple, with blurred graphite smudges, leader lines and a tally of counts.
 function sketch(p) {
@@ -90,14 +92,10 @@ function sketch(p) {
     for (const y of [250, 480, 740, 1010]) dashed(30, y, W - 30, y, 16, 12);
     for (const x of [250, 460, 700]) dashed(x, 60, x, 1340, 16, 12);
 
-    p.noStroke();
     const rows = [250, 480, 740, 1010];
     for (let i = 0; i < rows.length; i++) {
-      p.fill(70, 78, 110, 190);
-      p.textFont('monospace');
-      p.textSize(18);
-      p.text(String(i + 1), 218, rows[i] + 6);
-      p.text(String(i + 1), 950, rows[i] + 6);
+      letter(216, rows[i] + 6, String(i + 1), 17, [70, 78, 110], 0.75);
+      letter(946, rows[i] + 6, String(i + 1), 17, [70, 78, 110], 0.75);
     }
   }
 
@@ -223,17 +221,11 @@ function sketch(p) {
   }
 
   function marginType() {
-    p.noStroke();
-    p.textFont('monospace');
-    p.fill(70, 60, 78, 190);
-    p.textSize(11);
-    p.text('CONT FROM 2026-06-20', 812, 76);
-    p.text('092', 950, 430);
-    p.text('5 OF 9', 40, 1372);
-    p.text('059', 520, 320);
-    p.fill(198, 40, 40, 210);
-    p.textSize(13);
-    p.text('NOTE: 23', 388, 268);
+    letter(788, 76, 'CONT FROM 2026-06-20', 11, [70, 60, 78], 0.75);
+    letter(944, 430, '092', 11, [70, 60, 78], 0.75);
+    letter(40, 1372, '5 OF 9', 11, [70, 60, 78], 0.75);
+    letter(520, 320, '059', 11, [70, 60, 78], 0.7);
+    letter(388, 268, 'NOTE: 23', 13, [198, 40, 40], 0.85);
     p.stroke(198, 40, 40, 200);
     p.strokeWeight(1.6);
     p.line(388, 272, 470, 268);
@@ -251,22 +243,10 @@ function sketch(p) {
   }
 
   function letter(x, y, str, size, col, alpha) {
-    p.push();
-    p.noStroke();
-    p.textFont('monospace');
-    p.textSize(size);
-    let cx = x;
-    for (const ch of str) {
-      p.push();
-      p.translate(cx, y + p.random(-0.8, 0.8));
-      p.rotate(p.random(-0.02, 0.02));
-      p.fill(col[0], col[1], col[2], 255 * alpha);
-      p.text(ch, 0, 0);
-      p.pop();
-      cx += size * 0.62 + p.random(-0.6, 1.2);
-    }
-    p.pop();
+    handText(str, x, y, size, col, 255 * alpha);
   }
+
+  // @font
 
   function dashed(x1, y1, x2, y2, on, off) {
     if (on <= 0) return;
@@ -279,4 +259,4 @@ function sketch(p) {
     }
   }
 }
-`.trim();
+`.trim());
