@@ -2,6 +2,7 @@ import { LEDGER } from './ledger';
 import { WASHES } from './washes';
 import { MECHANISM } from './mechanism';
 import { VESSELS } from './vessels';
+import { PATCHES } from './patches';
 
 export interface Preset {
   id: string;
@@ -36,6 +37,13 @@ export const PRESETS: Preset[] = [
     description:
       'An exploded gear train in aniline purple with blurred graphite smudges, dashed leaders and a tally of counts.',
     sketchCode: MECHANISM,
+  },
+  {
+    id: 'patches',
+    title: 'Fifteen Patches',
+    description:
+      'Fifteen bands of long wandering strokes across five columns — open passes, slabs gone over until they closed, one fringed in slate hair.',
+    sketchCode: PATCHES,
   },
   {
     id: 'vessels',

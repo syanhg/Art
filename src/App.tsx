@@ -12,6 +12,7 @@ import { Icon } from './components/Icon';
 import { buildSystemPrompt, buildUserPrompt } from './lib/prompt';
 import { generateSketch } from './lib/providers';
 import { canvasToPng, type SketchStatus } from './lib/runner';
+import { PRESETS, type Preset } from './sketches';
 
 const APP_NAME = 'p5 Art Generator';
 
@@ -57,6 +58,7 @@ export default function App() {
   const [result, setResult] = useState<GenerationResult | null>(null);
   const [runToken, setRunToken] = useState(0);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [presetId, setPresetId] = useState<string | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -90,6 +92,7 @@ export default function App() {
     setErrorMessage(null);
     setStatus('thinking');
     setResult(null);
+    setPresetId(null);
 
     try {
       const systemPrompt = buildSystemPrompt();
@@ -140,14 +143,21 @@ export default function App() {
     download(`${slugify(result.title)}.js`, new Blob([result.sketchCode], { type: 'text/javascript' }));
   }
 
+  function handleShowPreset(preset: Preset) {
+    setPresetId(preset.id);
+    show(preset);
+  }
+
   function handleNew() {
     setPrompt('');
+    setPresetId(null);
     setResult(null);
     setStatus('idle');
     setErrorMessage(null);
   }
 
   function handleClearOutput() {
+    setPresetId(null);
     setResult(null);
     setStatus('idle');
     setErrorMessage(null);
@@ -223,9 +233,28 @@ export default function App() {
           </ActionButton>
         </GroupBox>
 
+        <GroupBox
+          label="Reference Pages"
+          icon="visualization"
+          className="shrink-0"
+          bodyClassName="flex flex-wrap items-center gap-2"
+        >
+          {PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              title={preset.description}
+              onClick={() => handleShowPreset(preset)}
+              className={`${presetId === preset.id ? 'win-sunken' : 'win-raised'} h-[22px] px-2 text-[11px]`}
+            >
+              {preset.title}
+            </button>
+          ))}
+        </GroupBox>
+
         <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-2">
           <GroupBox
-            label="Generated Page"
+            label={presetId ? 'Reference Page' : 'Generated Page'}
             icon="visualization"
             className="flex-1 min-h-0 flex flex-col basis-1/2"
             bodyClassName="flex-1 min-h-0 flex flex-col gap-2"
@@ -257,7 +286,7 @@ export default function App() {
           </GroupBox>
 
           <GroupBox
-            label="Generated p5.js Code"
+            label={presetId ? 'Reference p5.js Code' : 'Generated p5.js Code'}
             icon="code"
             className="flex-1 min-h-0 flex flex-col basis-1/2"
             bodyClassName="flex-1 min-h-0 flex flex-col gap-2"
