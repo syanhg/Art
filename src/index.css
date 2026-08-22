@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/600.css";
+
+:root {
+  --mono: "IBM Plex Mono", "JetBrains Mono", "SF Mono", Menlo, monospace;
+  --ui: "MS Sans Serif", Tahoma, "Segoe UI", Arial, sans-serif;
+
+  --face: #c0c0c0;      /* window / button face grey */
+  --well: #ffffff;      /* sunken content well */
+  --bevel-lt: #ffffff;  /* top-left highlight */
+  --bevel-dk: #808080;  /* bottom-right shadow */
+  --title-from: #000080;
+  --title-to: #1084d0;
+  --selection: #000080;
+  --text: #000000;
+  --grid: 20px;
+}
+
+* {
+  border-radius: 0 !important;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--face);
+  color: var(--text);
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: var(--ui);
+  font-size: 12px;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--selection);
+  color: #ffffff;
+}
+
+input, textarea, button, select {
+  font-family: var(--ui);
+  font-size: 12px;
+  color: var(--text);
+}
+
+input:focus, textarea:focus, button:focus, select:focus {
+  outline: 1px dotted #000000;
+  outline-offset: -3px;
+}
+
+.transition-opacity-fast {
+  transition: opacity 150ms linear;
+}
+
+.font-mono-ui {
+  font-family: var(--mono);
+}
+
+/* ---- Classic Windows 98 3D bevels ---- */
+
+.win-raised {
+  background: var(--face);
+  border: 2px outset var(--face);
+}
+
+.win-raised:active {
+  border-style: inset;
+}
+
+.win-sunken {
+  background: var(--well);
+  border: 2px inset var(--face);
+}
+
+.win-panel {
+  background: var(--face);
+  border: 2px outset var(--face);
+}
+
+.win-groupbox {
+  border: 2px groove var(--face);
+  position: relative;
+  background: var(--face);
+}
+
+.win-groupbox > .win-groupbox-label {
+  position: absolute;
+  top: -9px;
+  left: 8px;
+  background: var(--face);
+  padding: 0 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.win-scroll {
+  overflow: auto;
+}
+.win-scroll::-webkit-scrollbar {
+  width: 17px;
+  height: 17px;
+}
+.win-scroll::-webkit-scrollbar-track {
+  background: var(--face);
+}
+.win-scroll::-webkit-scrollbar-thumb {
+  background: var(--face);
+  border: 2px outset var(--face);
+}
+.win-scroll::-webkit-scrollbar-button {
+  background: var(--face);
+  border: 2px outset var(--face);
+  width: 17px;
+  height: 17px;
+}
+
+.icon {
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+/* The live p5 canvas is scaled to fit its sunken well. p5 writes inline
+   width/height on the element, so these have to win. */
+.sketch-stage canvas {
+  display: block;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+.checker {
+  background-image:
+    linear-gradient(45deg, #d8d8d8 25%, transparent 25%),
+    linear-gradient(-45deg, #d8d8d8 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #d8d8d8 75%),
+    linear-gradient(-45deg, transparent 75%, #d8d8d8 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}

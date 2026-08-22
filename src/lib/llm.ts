@@ -1,0 +1,139 @@
+import type { GenerationResult, Provider } from '../types';
+
+export interface GenerateArgs {
+  provider: Provider;
+  apiKey: string;
+  model: string;
+  systemPrompt: string;
+  userPrompt: string;
+}
+
+function validateResult(raw: unknown): GenerationResult {
+  const obj = raw as Record<string, unknown> | null;
+  if (
+    !obj ||
+    typeof obj.title !== 'string' ||
+    typeof obj.description !== 'string' ||
+    typeof obj.sketchCode !== 'string' ||
+    obj.sketchCode.trim().length === 0
+  ) {
+    throw new Error('The model returned a malformed response (missing title/description/sketchCode).');
+  }
+  return { title: obj.title, description: obj.description, sketchCode: obj.sketchCode };
+}
+
+async function extractError(res: Response): Promise<string> {
+  try {
+    const body = await res.json();
+    const message = body?.error?.message ?? body?.message ?? JSON.stringify(body);
+    return `${res.status} ${res.statusText}: ${message}`;
+  } catch {
+    return `${res.status} ${res.statusText}`;
+  }
+}
+
+async function callOpenAI({ apiKey, model, systemPrompt, userPrompt }: GenerateArgs): Promise<GenerationResult> {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      response_format: { type: 'json_object' },
+    }),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('GPT returned an empty response.');
+  return validateResult(JSON.parse(content));
+}
+
+async function callAnthropic({ apiKey, model, systemPrompt, userPrompt }: GenerateArgs): Promise<GenerationResult> {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 16000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+      tools: [
+        {
+          name: 'emit_sketch',
+          description: 'Emit the generated artwork metadata and the complete p5.js instance-mode sketch source.',
+          input_schema: {
+            type: 'object',
+            properties: {
+              title: { type: 'string' },
+              description: { type: 'string' },
+              sketchCode: { type: 'string' },
+            },
+            required: ['title', 'description', 'sketchCode'],
+          },
+        },
+      ],
+      tool_choice: { type: 'tool', name: 'emit_sketch' },
+    }),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  const data = await res.json();
+  const toolUse = (data.content as Array<{ type: string; input?: unknown }> | undefined)?.find(
+    (c) => c.type === 'tool_use',
+  );
+  if (!toolUse) throw new Error('Claude did not return a structured response.');
+  return validateResult(toolUse.input);
+}
+
+async function callGemini({ apiKey, model, systemPrompt, userPrompt }: GenerateArgs): Promise<GenerationResult> {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              title: { type: 'STRING' },
+              description: { type: 'STRING' },
+              sketchCode: { type: 'STRING' },
+            },
+            required: ['title', 'description', 'sketchCode'],
+          },
+        },
+      }),
+    },
+  );
+  if (!res.ok) throw new Error(await extractError(res));
+  const data = await res.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('Gemini returned an empty response.');
+  return validateResult(JSON.parse(text));
+}
+
+export async function generateSketch(args: GenerateArgs): Promise<GenerationResult> {
+  switch (args.provider) {
+    case 'openai':
+      return callOpenAI(args);
+    case 'anthropic':
+      return callAnthropic(args);
+    case 'gemini':
+      return callGemini(args);
+  }
+}
