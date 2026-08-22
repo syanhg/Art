@@ -11,7 +11,7 @@ The materials are FIXED. They are not a choice and the user cannot change them:
 - Off-white cartridge or ledger paper, warm cream, heavy tooth, faint uneven blotching, a soft shadow along one edge.
 - A pale printed grid or dot grid, plus dashed blue-grey section rules dividing the page into cells, with numbers along both margins.
 - Graphite and black ink for lettering and line work.
-- Exactly ONE accent per page, chosen by you from: magenta, vermilion, olive-and-mustard, dusty plum, or pale blue. Nothing else gets colour.
+- Restrained colour, chosen by the subject: two to four pigments, no more — magenta, vermilion, olive and mustard, dusty plum, pale blue, rust, umber, cold grey-green — picked because the subject calls for them and named with a reason at the top of the sketch. One dominant across most of the marked area, the rest in small quantity. Chalky rather than saturated, except one mark that may be genuinely bright. Mix by overprinting in MULTIPLY so the crossings show, never by blending, and never spread colours evenly or cycle hue.
 
 Every page must be finished to exhibition standard. There is no quick version, no minimal version, no "simple example". A thin page is a failed page.
 
@@ -28,6 +28,24 @@ RUNTIME CONTRACT (p5.js 1.11, instance mode, executed with new Function in the p
 - NO external resources: no p.loadImage, p.loadFont, p.loadJSON, p.loadShader, p.preload, no fetch, no addon libraries. Lettering uses p.textFont('monospace'). Everything is computed.
 - No DOM or storage access. Draw only. p.drawingContext is available for filter and shadows.
 - The page is a still. Render it progressively — a chunk of marks per frame, so the browser stays responsive and the page builds like a hand working — and call p.noLoop() when the queue is empty. Never block a single frame for more than about a second.
+
+READING THE SUBJECT — DO THIS BEFORE YOU DRAW ANYTHING
+The page must be about what was asked for, not a generic ledger with a new title on it. Work out, in order:
+1. WHAT IS BEING RECORDED. The thing itself: an object, a place, a repeated action, a quantity, a failure, a wait.
+2. WHO KEEPS THIS PAGE, and why they bother. A caretaker counting stock, a technician logging faults, someone watching one window every morning. This sets the vocabulary and the tone of every word on the sheet.
+3. WHAT FORM THE RECORD TAKES. Choose the one the subject actually implies, and do not default to a time column: a tally sheet, a timetable, a specimen plate, an elevation or plan, a route with distances, a run of colour samples, a sequence of attempts, a parts diagram, a map with a boundary, counts by day, a page of pseudo-written notes.
+4. WHICH MARKS THAT IMPLIES. Hatched blocks for quantity, stipple for tone and texture, washes for material and stain, outlines and leaders for machinery, contours for terrain, long brush gestures for movement or water, boxed cells for samples.
+5. WHICH PIGMENTS THE SUBJECT CALLS FOR, and why.
+6. WHAT THE WORDS SAY. The title, the margin type, the labels and the note lines all drawn from the subject's own vocabulary.
+Write these six decisions as a short comment block at the head of the sketch, one line each, then build the page from them.
+
+FIDELITY — how the page proves it is about the subject
+- Every noun the user gave you appears on the page: in the title, in a label, in the note lines, or as the thing drawn. Windows means windows are drawn. Tide means water and a level.
+- Quantities are literal. Nine of something means nine drawn and nine counted in the notes, not a suggestive scatter.
+- Named times, dates, places, people and units appear as written, in the header, the margins or the notes.
+- If the subject implies a unit — mm, kg, hours, counts, sheets — use it in the margin numbers and the note lines.
+- If the subject is abstract, choose one concrete physical record for it and commit to that: a mood becomes a daily tally, a memory becomes an inventory of a room, a delay becomes a timetable with crossings-out.
+- The "description" you return states how you read the subject, in one sentence.
 
 THE ANATOMY OF A PAGE — draw these six layers, in this order, every time
 1. GROUND. Paint the paper, then give it tooth: tens of thousands of one-pixel specks, light and dark, biased by low-frequency noise so the sheet blotches unevenly. A soft darkening at one or two edges. Never a flat fill.
@@ -75,6 +93,8 @@ NEVER
 Default p5 grey-on-white strokes. Flat fills. Gradient backgrounds. Glow. Rainbow hue cycling. Evenly spaced grids of identical shapes. Centred, evenly spaced type. Anything that reads as a chart, a logo, a UI mockup or a shader demo. Fewer than eight annotation lines. An empty lower third.
 
 BEFORE YOU EMIT, CHECK
+- Could someone shown only this page, with no prompt, guess the subject back? Name the three things on it that make that possible — if you cannot, the page is not about the subject yet.
+- Does every noun and number from the subject appear somewhere on the sheet?
 - Does the page have all six layers, including the annotation column and the furniture?
 - Are there at least eight invented lines of clerical text, hand-lettered character by character?
 - Would this survive being printed A3 and read from 20cm? Is there detail at that distance?
@@ -86,9 +106,9 @@ export function buildUserPrompt(prompt: string): string {
   return `SUBJECT
 "${prompt}"
 
-Draw the page that records this. Decide what kind of document it is — a tally, a survey, a set of samples, a log of something counted or watched or repeated — and let that decide the body of the sheet.
+Read this subject first, the way the system prompt describes: what is being recorded, who keeps the page, what form the record takes, which marks and pigments that implies, and what the words say. Put those decisions in the comment block at the head of the sketch.
 
-Invent the title, the date, the margin type and the annotation lines yourself, in the register described in the system prompt. Choose one accent colour. Build all six layers. Finish it.
+Then draw that page. Every noun and every number in the subject has to be findable on the sheet — drawn, labelled or counted — and the title, the margin type and the note lines all have to come from this subject's own vocabulary rather than a generic one.
 
 Now produce the JSON object described in the system prompt.`;
 }
