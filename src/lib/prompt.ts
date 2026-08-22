@@ -34,8 +34,8 @@ READING THE SUBJECT — DO THIS BEFORE YOU DRAW ANYTHING
 The page must be about what was asked for, not a generic ledger with a new title on it. Work out, in order:
 1. WHAT IS BEING RECORDED. The thing itself: an object, a place, a repeated action, a quantity, a failure, a wait.
 2. WHO KEEPS THIS PAGE, and why they bother. A caretaker counting stock, a technician logging faults, someone watching one window every morning. This sets the vocabulary and the tone of every word on the sheet.
-3. WHAT FORM THE RECORD TAKES. Choose the one the subject actually implies, and do not default to a time column: a tally sheet, a timetable, a specimen plate, an elevation or plan, a route with distances, a run of colour samples, a sequence of attempts, a parts diagram, a map with a boundary, counts by day, a page of pseudo-written notes, a stack of banded strata where each band is one run, one patch or one day.
-4. WHICH MARKS THAT IMPLIES. Hatched blocks for quantity, stipple for tone and texture, washes for material and stain, outlines and leaders for machinery, contours for terrain, long brush gestures for movement or water, boxed cells for samples, stacked bands of long horizontal strokes for anything repeated in parallel runs.
+3. WHAT FORM THE RECORD TAKES. Choose the one the subject actually implies, and do not default to a time column: a tally sheet, a timetable, a specimen plate, an elevation or plan, a route with distances, a run of colour samples, a sequence of attempts, a parts diagram, a map with a boundary, counts by day, a page of pseudo-written notes.
+4. WHICH MARKS THAT IMPLIES. Hatched blocks for quantity, stipple for tone and texture, washes for material and stain, outlines and leaders for machinery, contours for terrain, long brush gestures for movement or water, boxed cells for samples.
 5. WHICH PIGMENTS THE SUBJECT CALLS FOR, and why.
 6. WHAT THE WORDS SAY. The title, the margin type, the labels and the note lines all drawn from the subject's own vocabulary.
 Write these six decisions as a short comment block at the head of the sketch, one line each, then build the page from them.
@@ -57,7 +57,7 @@ THE ANATOMY OF A PAGE — draw these six layers, in this order, every time
 6. FURNITURE. Page numbers, a sheet count like 6 OF 11, a code in the corner, ink specks scattered by noise, one or two black blots with a spray of satellites, a smudge or a fingerprint, occasionally a punch hole or a piece of tape.
 
 THE WORDS — you must invent them, and they matter as much as the marks
-- Titles are flat, physical and slightly off: RULED ON THE WINDOW LEDGE. WASHES AGAINST THE WALL. WRITING DOWN THE HOUSE. THE WALL, DONE. FIFTEEN PATCHES. A place, a surface or a chore, stated plainly. Never poetic, never abstract, never a noun-phrase title like "Chromatic Dreams".
+- Titles are flat, physical and slightly off: RULED ON THE WINDOW LEDGE. WASHES AGAINST THE WALL. WRITING DOWN THE HOUSE. THE WALL, DONE. A place, a surface or a chore, stated plainly. Never poetic, never abstract, never a noun-phrase title like "Chromatic Dreams".
 - Dates are concrete and inconsistent in format across the page: 28.07.25 in the header, CONT FROM 07/03/2026 in the corner.
 - Annotation lines are clerical, clipped, and never explain themselves: NOT FLUFFING. SOLD, 9 SO FAR. WATER, NOT SOLD. 51 SH AS ABOVE. POSTAL, NOT INVOICE. 49 SH AGAIN. Write eight to sixteen of these, fitted to the prompt's subject, in that register — abbreviations, counts, comparisons to other entries, a question mark, a correction. Vary the length so the column has a ragged right edge.
 - Margins carry small dry type: units, counts, a manufacturer's line, a part number, an instruction to the self.
@@ -80,15 +80,7 @@ CRAFT THAT SEPARATES A REAL PLATE FROM A DEMO
 6. Light with a scalar around the ring, e.g. (1 - cos(angle + offset)) / 2, the offset identical everywhere so one direction lights the page.
 7. Declare a named colour set before drawing — ground, tooth, ruling, graphite, ink, accent — as explicit values, hue nearly constant, difference carried by value and saturation. Jitter each mark a few units around its role. Only the accent may be saturated.
 8. Put density on a dial: one or two marks-per-pixel constants at the top, every count derived from them.
-9. For a subject that repeats — runs, shifts, patches, attempts, days — build the page as BANDED STRATA and let that carry the whole body. Stack ten to twenty bands down the sheet, each one a patch of long horizontal strokes drawn left to right, and vary them so the stack reads as a record and not a texture:
-   - Each band gets its own height, its own number of stacked passes, and its own right-hand stopping point, so the right edge of the page is ragged from band to band.
-   - Alternate OPEN bands, where the passes stay separate with paper between them, against SLAB bands gone over so many times they closed into a mass. Three or four slabs on a page is right; more and it turns to mud.
-   - A slab is a broad chalky bed laid down first in the band's own pigment, with the passes drawn over it — never a black rectangle.
-   - Draw each pass as a polyline whose height wanders on low-frequency noise by a fraction of the row spacing, so rows still read as rows. Pressure enters light, thickens through the middle, lifts at the end, and the dry sheet drops the odd segment.
-   - Vary the pigment per row from a weighted list, one pigment carrying most of the rows. The pen rows are leant on: heavier, darker and more opaque than the crayon rows around them.
-   - Furnish the bands: small counting ticks, upright and square, dropped along the passes; a little bracket-shaped hook where a pass turned back on itself; one band combed with short hanging hair strokes; column numbers along the top band.
-   - Overprint the whole body in MULTIPLY so the crossings darken, and reset to BLEND before the lettering.
-10. Compose as a family, not a hero: varied proportions, uneven gaps, an off-centre focus, generous margins, and empty space that looks intended.
+9. Compose as a family, not a hero: varied proportions, uneven gaps, an off-centre focus, generous margins, and empty space that looks intended.
 
 DENSITY — the most common failure is a page that is too empty
 - A finished page carries tens of thousands of marks. 50,000 is the floor; several hundred thousand is normal for a stipple or pseudo-writing page.

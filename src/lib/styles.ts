@@ -1,7 +1,8 @@
 /**
- * The form the page takes. Few options, each a genuinely different mark system
- * — bands, blocks, washes, line work, stipple — so the choice changes the page
- * rather than tinting it. The directive is appended to the subject.
+ * The technique the page is made in. Each option is a drawing or printing
+ * tradition — common craft vocabulary, not any one artist's signature look —
+ * chosen so the options differ in how the marks are made rather than in mood.
+ * The directive is appended to the subject.
  */
 export interface Style {
   id: string;
@@ -14,42 +15,42 @@ export const STYLES: Style[] = [
   {
     id: 'auto',
     label: 'Auto',
-    hint: 'Let the subject decide the form.',
+    hint: 'Let the subject decide the technique.',
     directive: '',
   },
   {
-    id: 'bands',
-    label: 'Bands',
-    hint: 'Stacked strata of long horizontal passes.',
+    id: 'hatched',
+    label: 'Hatched',
+    hint: 'Pen and ink: tone built from crossed line.',
     directive:
-      'Build the body as BANDED STRATA. Ten to twenty bands stacked down the sheet, each one a patch of long horizontal passes drawn left to right, each with its own height, its own number of stacked rows and its own stopping point so the right edge stays ragged. Alternate open bands, where the passes keep paper between them, against three or four slabs gone over until they closed — a broad chalky bed in the band pigment with the passes drawn over it, never a filled rectangle. Comb one band with short hanging hair strokes. Drop counting ticks along the runs and a bracket-shaped hook where a pass turned back. One pigment carries most of the rows; the pen rows are leant on, heavier and darker than the crayon rows around them.',
+      'Make every tone from HATCHING, the way an engraver does. No fills anywhere. Dark is close-set line, light is open line, and mid-tone is two or three layers crossed at shallow angles. Curve the hatching to follow the form it sits on, let the strokes taper at both ends, and let the lines that bound a shape be nothing but the hatching stopping. Vary the angle set between one area and the next so neighbouring passages separate.',
   },
   {
-    id: 'ledger',
-    label: 'Ledger',
-    hint: 'Ruled time column, hatched blocks, stippled patches.',
+    id: 'stippled',
+    label: 'Stippled',
+    hint: 'Tone built entirely from dots.',
     directive:
-      'Build the body as a RULED LEDGER on graph paper. A column of times, dates or readings down the left, and four or five columns of entries registered to it: blocks built from dense parallel hatching, squares of stipple with a dark core, and solid ink bars where something ran without a break. Number the columns along the foot. Repeat one part of the record a second time in a small panel low on the page, counted again and disagreeing slightly with the first count.',
+      'Make every tone from STIPPLE — dots only, no line and no fill. Density carries value: dense clustered dots in shadow thinning to bare paper in light, with the dot size varying slightly and the spacing sampled unevenly rather than on a grid. Edges are where dots crowd, never a drawn outline. Keep one light direction across the whole page.',
   },
   {
-    id: 'washes',
-    label: 'Washes',
-    hint: 'Gouache cells overprinted on an engineering grid.',
+    id: 'blueprint',
+    label: 'Blueprint',
+    hint: 'Pale line on process blue, reversed out.',
     directive:
-      'Build the body as WASHES: cells of gouache laid over a printed engineering grid and overprinted in MULTIPLY so every crossing darkens. A checkerboard field, columns of stripes and two or three long bars, each cell mottled — pigment pooling darker at one edge, a bleached corner, dry-brush breaks where the sheet took nothing. Colour does the work here; keep line work to the ruling and the lettering.',
+      'Draw the page as a BLUEPRINT: a deep process-blue ground, everything drawn in pale line reversed out of it, with the paper white reserved only for the lightest marks. Line work is technical — measured, dimensioned, with witness lines and arrowheads — but hand-drawn, so it wavers. Blotch the blue unevenly the way a wet-process print does, fade it toward one edge, and let a crease or a roller mark run through it.',
   },
   {
-    id: 'diagram',
-    label: 'Diagram',
-    hint: 'Exploded parts in line, leaders and tallies.',
+    id: 'riso',
+    label: 'Riso',
+    hint: 'Two ink drums, out of register.',
     directive:
-      'Build the body as an EXPLODED DIAGRAM in line. The thing taken apart along one axis, each component outlined with a wavering doubled contour, spaced so nothing overlaps, with dashed leaders running out to lettered labels. Rub blurred graphite under the heavier parts so they sit on the page. Run a tally of counts down one side in five-bar gates.',
+      'Print the page as a two-colour DUOTONE from separated plates: one drum a strong flat ink, the other a second colour, each laid down as its own layer of coarse dots or open line and overprinted in MULTIPLY so the overlap makes a third colour. Offset the second plate two or three pixels from the first so the registration is visibly out. Ink lies unevenly — heavier at one edge of a pass, dropping out in patches — and shows roller streaks along the run direction.',
   },
   {
-    id: 'plate',
-    label: 'Plate',
-    hint: 'A stippled specimen plate of volumes.',
+    id: 'woodcut',
+    label: 'Woodcut',
+    hint: 'Carved relief: solid black, gouged white.',
     directive:
-      'Build the body as a STIPPLED SPECIMEN PLATE. A row or grid of volumes, each built as a stack of rings along a spine with the ring silhouette taken from randomly assembled easing curves, drawn entirely in dots — no outlines. Hold the same foreshortening ratio across every specimen and light them all from one direction with a scalar around the ring. Number each specimen under its own boxed cell and record its dimensions beside it.',
+      'Cut the page as a RELIEF PRINT. Only two values: solid black ink and the white the gouge took out. Model form with parallel gouge cuts that swell and taper as the tool bit deeper, and break large blacks with clusters of short chattering cuts. Every edge is a cut edge — angular, slightly splintered, with the odd slip where the blade ran on. Print it unevenly so the black is thin where the block did not take.',
   },
 ];
