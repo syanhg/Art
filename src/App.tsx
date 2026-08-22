@@ -10,10 +10,11 @@ import { SketchCanvas } from './components/SketchCanvas';
 import { ActionButton } from './components/ActionButton';
 import { Icon } from './components/Icon';
 import { buildSystemPrompt, buildUserPrompt } from './lib/systemPrompt';
-import { buildRepairPrompt, generateSketch } from './lib/llm';
-import { canvasToPng, validateSketch, type SketchStatus } from './lib/p5runner';
+import { generateSketch } from './lib/llm';
+import { canvasToPng, type SketchStatus } from './lib/p5runner';
+import { PRESETS, type Preset } from './lib/presets';
 
-const APP_NAME = 'Art Generator';
+const APP_NAME = 'p5 Art Generator';
 
 function useStored(key: string, initial: string) {
   const [value, setValue] = useState(() => localStorage.getItem(key) ?? initial);
@@ -99,21 +100,13 @@ export default function App() {
           '\n\nThis is a remix request: produce a different variation (different seed, parameters or composition) of the same theme, not the same sketch.';
       }
 
-      const call = (text: string) =>
-        generateSketch({ provider: providerTyped, apiKey, model, systemPrompt, userPrompt: text });
-
-      let generated = await call(userPrompt);
-
-      // Compile before mounting: a sketch that will not parse gets one repair
-      // round trip rather than landing in front of the user as an error.
-      let problem = validateSketch(generated.sketchCode);
-      if (problem) {
-        setStatus('repairing');
-        const repaired = await call(buildRepairPrompt(generated, problem));
-        const stillBroken = validateSketch(repaired.sketchCode);
-        if (stillBroken) throw new Error(stillBroken);
-        generated = repaired;
-      }
+      const generated = await generateSketch({
+        provider: providerTyped,
+        apiKey,
+        model,
+        systemPrompt,
+        userPrompt,
+      });
 
       setStatus('rendering');
       show(generated);
@@ -121,6 +114,10 @@ export default function App() {
       setStatus('error');
       setErrorMessage(err instanceof Error ? err.message : String(err));
     }
+  }
+
+  function loadPreset(preset: Preset) {
+    show({ title: preset.title, description: preset.description, sketchCode: preset.sketchCode });
   }
 
   function handleSketchError(message: string) {
@@ -161,19 +158,17 @@ export default function App() {
     setErrorMessage(null);
   }
 
-  const busy = status === 'thinking' || status === 'rendering' || status === 'repairing';
+  const busy = status === 'thinking' || status === 'rendering';
 
   const statusText =
     status === 'thinking'
       ? `Querying ${PROVIDERS.find((p) => p.id === provider)?.label}…`
-      : status === 'repairing'
-        ? 'Sketch did not parse — asking the model to fix it…'
-        : status === 'rendering'
-          ? 'Compiling sketch…'
+      : status === 'rendering'
+        ? 'Compiling sketch…'
         : status === 'error'
           ? (errorMessage ?? 'Error')
           : result
-            ? `${result.title} — drawn`
+            ? `${result.title} — drawn in p5.js`
             : 'Ready';
 
   return (
@@ -197,6 +192,10 @@ export default function App() {
               { label: 'Copy Sketch Code', onClick: handleCopy, disabled: !result },
               { label: 'Clear Output', onClick: handleClearOutput, disabled: !result },
             ],
+          },
+          {
+            label: 'References',
+            items: PRESETS.map((preset) => ({ label: preset.title, onClick: () => loadPreset(preset) })),
           },
           {
             label: 'Help',
@@ -267,7 +266,7 @@ export default function App() {
           </GroupBox>
 
           <GroupBox
-            label="Generated Code"
+            label="Generated p5.js Code"
             icon="code"
             className="flex-1 min-h-0 flex flex-col basis-1/2"
             bodyClassName="flex-1 min-h-0 flex flex-col gap-2"
@@ -326,8 +325,9 @@ export default function App() {
               <div className="text-[12px] leading-snug">
                 <p className="font-bold mb-1">{APP_NAME}</p>
                 <p>
-                  Describe what a page should record. GPT / Claude / Gemini writes a sketch that draws the whole
-                  sheet — ruling, drawn title, the subject, annotation column and all — live in your browser.
+                  Describe what a page should record. GPT / Claude / Gemini writes a p5.js sketch that draws the
+                  whole sheet — ruling, hand-lettered title, drawing, annotation column and all — live in your
+                  browser. The materials are fixed: graphite and ink on cream paper, one accent.
                 </p>
               </div>
             </div>

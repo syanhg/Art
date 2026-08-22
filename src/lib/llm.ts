@@ -22,12 +22,6 @@ function validateResult(raw: unknown): GenerationResult {
   return { title: obj.title, description: obj.description, sketchCode: obj.sketchCode };
 }
 
-/** A page of the required density runs long; leave room for it. */
-const MAX_OUTPUT_TOKENS = 32000;
-
-const TRUNCATED =
-  'The model stopped before finishing the sketch (output token limit). Generate again — if it keeps happening, ask for a simpler subject.';
-
 async function extractError(res: Response): Promise<string> {
   try {
     const body = await res.json();
@@ -51,13 +45,11 @@ async function callOpenAI({ apiKey, model, systemPrompt, userPrompt }: GenerateA
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      max_completion_tokens: MAX_OUTPUT_TOKENS,
       response_format: { type: 'json_object' },
     }),
   });
   if (!res.ok) throw new Error(await extractError(res));
   const data = await res.json();
-  if (data.choices?.[0]?.finish_reason === 'length') throw new Error(TRUNCATED);
   const content = data.choices?.[0]?.message?.content;
   if (!content) throw new Error('GPT returned an empty response.');
   return validateResult(JSON.parse(content));
@@ -74,7 +66,7 @@ async function callAnthropic({ apiKey, model, systemPrompt, userPrompt }: Genera
     },
     body: JSON.stringify({
       model,
-      max_tokens: MAX_OUTPUT_TOKENS,
+      max_tokens: 16000,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
       tools: [
@@ -97,7 +89,6 @@ async function callAnthropic({ apiKey, model, systemPrompt, userPrompt }: Genera
   });
   if (!res.ok) throw new Error(await extractError(res));
   const data = await res.json();
-  if (data.stop_reason === 'max_tokens') throw new Error(TRUNCATED);
   const toolUse = (data.content as Array<{ type: string; input?: unknown }> | undefined)?.find(
     (c) => c.type === 'tool_use',
   );
@@ -115,7 +106,6 @@ async function callGemini({ apiKey, model, systemPrompt, userPrompt }: GenerateA
         systemInstruction: { parts: [{ text: systemPrompt }] },
         contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
         generationConfig: {
-          maxOutputTokens: MAX_OUTPUT_TOKENS,
           responseMimeType: 'application/json',
           responseSchema: {
             type: 'OBJECT',
@@ -132,28 +122,9 @@ async function callGemini({ apiKey, model, systemPrompt, userPrompt }: GenerateA
   );
   if (!res.ok) throw new Error(await extractError(res));
   const data = await res.json();
-  if (data.candidates?.[0]?.finishReason === 'MAX_TOKENS') throw new Error(TRUNCATED);
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) throw new Error('Gemini returned an empty response.');
   return validateResult(JSON.parse(text));
-}
-
-/**
- * Asks the model to fix source that would not parse. Cheaper and far less
- * annoying than making the user press Generate again.
- */
-export function buildRepairPrompt(result: GenerationResult, error: string): string {
-  return `The sketch below does not parse. The browser reports:
-
-${error}
-
-Return the SAME piece, corrected so it parses — keep the title, the composition and every mark identical, and change only what is needed to make it valid JavaScript. Respond with the JSON object described in the system prompt, with the corrected source in "sketchCode".
-
-TITLE
-${result.title}
-
-SOURCE
-${result.sketchCode}`;
 }
 
 export async function generateSketch(args: GenerateArgs): Promise<GenerationResult> {

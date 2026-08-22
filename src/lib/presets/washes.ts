@@ -1,6 +1,4 @@
-import { withFont } from './handfont';
-
-export const WASHES = withFont(String.raw`
+export const WASHES = String.raw`
 // "Washes Against the Wall" — gouache squares registered to a printed
 // engineering grid: a checkerboard field, stripe columns and long bars,
 // every cell mottled and overprinted in MULTIPLY.
@@ -175,20 +173,34 @@ function sketch(p) {
     p.push();
     p.translate(26, 700);
     p.rotate(-p.HALF_PI);
-    handText('2 CYCLES X 70 DIVISIONS   HALE & SON   MADE IN U.S.A.', -250, 0, 13, [176, 60, 44], 220);
-    handText('48 5105', 220, 0, 20, [176, 60, 44], 230);
+    p.noStroke();
+    p.fill(176, 60, 44, 220);
+    p.textFont('monospace');
+    p.textSize(13);
+    p.text('2 CYCLES X 70 DIVISIONS   HALE & SON   MADE IN U.S.A.', -250, 0);
+    p.textSize(20);
+    p.text('48 5105', 220, 0);
     p.pop();
 
     p.push();
     p.translate(972, 520);
     p.rotate(-p.HALF_PI);
-    handText('TIE PAGE RAN OUT', 0, 0, 11, [70, 78, 104], 190);
+    p.noStroke();
+    p.fill(70, 78, 104, 190);
+    p.textFont('monospace');
+    p.textSize(11);
+    p.text('TIE PAGE RAN OUT', 0, 0);
     p.pop();
 
-    handText('6 OF 11', 898, 34, 12, [70, 78, 104], 180);
-    handText('123', 926, 1382, 12, [70, 78, 104], 180);
+    p.noStroke();
+    p.fill(70, 78, 104, 180);
+    p.textFont('monospace');
+    p.textSize(12);
+    p.text('6 OF 11', 906, 34);
+    p.text('123', 928, 1382);
     for (let i = 0; i < 9; i++) {
-      handText(String(i + 1), 22, 96 + i * 150, 13, [176, 60, 44], 200);
+      p.fill(176, 60, 44, 200);
+      p.text(String(i + 1), 24, 96 + i * 150);
     }
   }
 
@@ -211,10 +223,22 @@ function sketch(p) {
   }
 
   function letter(x, y, str, size, col) {
-    handText(str, x, y, size, col, 225);
+    p.push();
+    p.noStroke();
+    p.textFont('monospace');
+    p.textSize(size);
+    let cx = x;
+    for (const ch of str) {
+      p.push();
+      p.translate(cx, y + p.random(-1, 1));
+      p.rotate(p.random(-0.02, 0.02));
+      p.fill(col[0], col[1], col[2], p.random(200, 240));
+      p.text(ch, 0, 0);
+      p.pop();
+      cx += size * 0.66 + p.random(-1, 1.5);
+    }
+    p.pop();
   }
-
-  // @font
 
   function dashed(x1, y1, x2, y2, on, off) {
     const d = p.dist(x1, y1, x2, y2);
@@ -226,4 +250,4 @@ function sketch(p) {
     }
   }
 }
-`.trim());
+`.trim();

@@ -1,6 +1,4 @@
-import { withFont } from './handfont';
-
-export const LEDGER = withFont(String.raw`
+export const LEDGER = String.raw`
 // "The Wall, Done" — a hand-kept ledger on graph paper: hatched blocks,
 // stippled patches and ink bars laid out against a ruled time column.
 function sketch(p) {
@@ -65,7 +63,13 @@ function sketch(p) {
     p.rect(826, 1305, 3, 3);
 
     label(222, 1356, 'COUNT IT AGAIN', 13, 0.7);
-    handText('MISMARKED THE FIRST PATCH', 414, 1364, 13, [126, 104, 62], 215);
+    p.push();
+    p.noStroke();
+    p.fill(126, 104, 62, 215);
+    p.textFont('monospace');
+    p.textSize(13);
+    p.text('MISMARKED THE FIRST PATCH', 414, 1364);
+    p.pop();
   };
 
   // ---- surfaces -----------------------------------------------------------
@@ -185,10 +189,22 @@ function sketch(p) {
   // ---- lettering ----------------------------------------------------------
 
   function label(x, y, str, size, alpha) {
-    handText(str, x, y, size, [38, 40, 52], 255 * alpha);
+    p.push();
+    p.noStroke();
+    p.textFont('monospace');
+    p.textSize(size);
+    let cx = x;
+    for (const ch of str) {
+      p.push();
+      p.translate(cx, y + p.random(-0.7, 0.7));
+      p.rotate(p.random(-0.022, 0.022));
+      p.fill(38, 40, 52, 255 * alpha);
+      p.text(ch, 0, 0);
+      p.pop();
+      cx += size * 0.62 + p.random(-0.5, 1.2);
+    }
+    p.pop();
   }
-
-  // @font
 
   function dashed(x1, y1, x2, y2, on, off) {
     const d = p.dist(x1, y1, x2, y2);
@@ -200,4 +216,4 @@ function sketch(p) {
     }
   }
 }
-`.trim());
+`.trim();

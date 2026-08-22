@@ -19,7 +19,7 @@ const FORBIDDEN = [
   /\bimport\s*\(/,
 ];
 
-export type SketchStatus = 'idle' | 'thinking' | 'repairing' | 'rendering' | 'done' | 'error';
+export type SketchStatus = 'idle' | 'thinking' | 'rendering' | 'done' | 'error';
 
 export interface SketchHandle {
   instance: p5;
@@ -43,114 +43,8 @@ function describeError(err: unknown): string {
   return String(err);
 }
 
-/**
- * Models sometimes wrap the source in a markdown fence or open with a line of
- * prose. Both are syntax errors, and both are trivially recoverable.
- */
-export function sanitizeSketch(raw: string): string {
-  let code = raw.trim();
-  const fence = code.match(/^```(?:javascript|js)?\s*\n([\s\S]*?)\n?```$/);
-  if (fence) code = fence[1].trim();
-  const start = code.search(/(?:^|\n)\s*(?:\/\/|\/\*|function\s+sketch\b|const\b|let\b|var\b)/);
-  if (start > 0) code = code.slice(start).trim();
-  return code;
-}
-
-/**
- * Walks the source outside strings, comments and template literals, matching
- * brackets by kind. Overall counts can balance while a ")" is closed by a "]",
- * which is exactly the failure the parser reports without a line number.
- */
-export interface BracketProblem {
-  kind: 'mismatch' | 'unclosed';
-  line: number;
-  column: number;
-  found?: string;
-  expected?: string;
-  text: string;
-}
-
-const CLOSERS: Record<string, string> = { ')': '(', ']': '[', '}': '{' };
-
-export function findBracketProblem(code: string): BracketProblem | null {
-  const lines = code.split('\n');
-  const stack: { char: string; line: number; column: number }[] = [];
-  let line = 1;
-  let column = 1;
-  let quote = '';
-  let i = 0;
-
-  const at = (n: number) => (lines[n - 1] ?? '').trim().slice(0, 120);
-
-  while (i < code.length) {
-    const c = code[i];
-    const next = code[i + 1];
-    if (c === '\n') {
-      line++;
-      column = 0;
-    }
-
-    if (quote) {
-      if (c === '\\') {
-        i += 2;
-        column += 2;
-        continue;
-      }
-      if (c === quote) quote = '';
-    } else if (c === '"' || c === "'" || c === '`') {
-      quote = c;
-    } else if (c === '/' && next === '/') {
-      const nl = code.indexOf('\n', i);
-      if (nl < 0) break;
-      i = nl;
-      continue;
-    } else if (c === '/' && next === '*') {
-      const end = code.indexOf('*/', i + 2);
-      const skipped = (end < 0 ? code.slice(i) : code.slice(i, end + 2)).split('\n').length - 1;
-      line += skipped;
-      i = end < 0 ? code.length : end + 2;
-      continue;
-    } else if (c === '(' || c === '[' || c === '{') {
-      stack.push({ char: c, line, column });
-    } else if (c === ')' || c === ']' || c === '}') {
-      const open = stack.pop();
-      if (!open || open.char !== CLOSERS[c]) {
-        return {
-          kind: 'mismatch',
-          line,
-          column,
-          found: c,
-          expected: open ? { '(': ')', '[': ']', '{': '}' }[open.char] : 'nothing',
-          text: at(line),
-        };
-      }
-    }
-
-    i++;
-    column++;
-  }
-
-  const left = stack.pop();
-  if (left) {
-    return { kind: 'unclosed', line: left.line, column: left.column, found: left.char, text: at(left.line) };
-  }
-  return null;
-}
-
-/** Compiles without mounting, so bad source is caught before it reaches p5. */
-export function validateSketch(source: string): string | null {
-  try {
-    compileSketch(source);
-    return null;
-  } catch (err) {
-    return describeError(err);
-  }
-}
-
 /** Turns the generated source into an instance-mode sketch factory. */
-export function compileSketch(source: string): (p: p5) => void {
-  const code = sanitizeSketch(source);
-
+export function compileSketch(code: string): (p: p5) => void {
   for (const pattern of FORBIDDEN) {
     if (pattern.test(code)) {
       throw new Error(`The generated sketch was blocked: it uses a disallowed API (${pattern.source}).`);
@@ -164,18 +58,7 @@ export function compileSketch(source: string): (p: p5) => void {
       `"use strict";\n${code}\n;return typeof sketch === "function" ? sketch : null;`,
     ) as () => unknown;
   } catch (err) {
-    const problem = findBracketProblem(code);
-    let hint = 'Check the source in the code pane.';
-    if (problem?.kind === 'mismatch') {
-      hint =
-        `Line ${problem.line}: found "${problem.found}" where "${problem.expected}" was expected.\n` +
-        `  ${problem.text}`;
-    } else if (problem?.kind === 'unclosed') {
-      hint =
-        `The response looks cut off: "${problem.found}" opened on line ${problem.line} is never closed.\n` +
-        `  ${problem.text}`;
-    }
-    throw new Error(`The generated sketch has a syntax error. ${describeError(err)}\n${hint}`);
+    throw new Error(`The generated sketch has a syntax error. ${describeError(err)}`);
   }
 
   const fn = factory();
