@@ -7,7 +7,7 @@ export function CodeEditor({ code }: { code: string }) {
         height="100%"
         language="javascript"
         theme="light"
-        value={code || '// The generated p5.js sketch will appear here after you click Generate.'}
+        value={code || '// The generated sketch will appear here after you click Generate.'}
         options={{
           readOnly: true,
           domReadOnly: true,
